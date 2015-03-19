@@ -1,5 +1,6 @@
 Require Import Coq.Lists.List.
 Require Import Coq.Strings.String.
+Require Import Coq.ZArith.ZArith.
 Require Import FunctionNinjas.All.
 Require Import Io.System.All.
 Require Import ListString.All.
@@ -17,27 +18,32 @@ Module Package.
 End Package.
 
 Definition package_names : C (list LString.t) :=
-  (* let command := List.map LString.s ["opam"; "search"; "coq:"; "--short"] in *)
-  (* let command := List.map LString.s ["echo"; "hello world"] in *)
-  (* let command := List.map LString.s ["echo"; "hello"; "world"] in *)
-  (* let command := List.map LString.s ["ruby"; "-e"; "exit 12"] in *)
-  (* let command := List.map LString.s ["ruby"; "-e"; "exit(-12)"] in *)
-  let command := List.map LString.s ["ruby"; "-e"; "izaoef"] in
+  let command := List.map LString.s ["opam"; "search"; "--short"; "coq:"] in
   let! result := System.eval command in
   match result with
   | None =>
-    do! System.log @@ LString.s "Cannot run the command" in
+    do! System.log @@ LString.s "Cannot run the command." in
     ret nil
-  | Some (status, names, err) =>
+  | Some (0%Z, names, _) =>
+    let names := LString.split names (LString.Char.n) in
+    ret @@ List.filter (fun name => negb @@ LString.is_empty name) names
+  | Some (_, names, err) =>
     let! _ : bool := System.print names in
     let! _ : bool := System.print err in
-    do! System.log (LString.of_Z 10 10 status) in
     ret nil
+  end.
+
+Fixpoint print_names (names : list LString.t) : C unit :=
+  match names with
+  | [] => ret tt
+  | name :: names =>
+    do! System.log name in
+    print_names names
   end.
 
 Definition main (argv : list LString.t) : C unit :=
   let! names := package_names in
-  ret tt.
+  print_names names.
 
 (** The extracted program. *)
 Definition opamWebsite : unit := Extraction.run main.
