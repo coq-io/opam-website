@@ -108,6 +108,11 @@ Module Index.
 End Index.
 
 Module Version.
-  Definition page : LString.t :=
-    header ++ footer.
+  Definition title (name : LString.t) (version : Version.t) : LString.t :=
+    LString.s "          <h1>" ++ name ++
+    LString.s " <small>" ++ Version.version version ++ LString.s "</small></h1>
+  ".
+
+  Definition page (name : LString.t) (version : Version.t) : LString.t :=
+    header ++ title name version ++ footer.
 End Version.

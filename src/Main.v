@@ -150,16 +150,16 @@ Definition generate_file (file_name file_content : LString.t) : C unit :=
   let file_name := LString.s "html/" ++ file_name in
   let! is_success := System.write_file file_name file_content in
   if is_success then
-    log (file_name ++ LString.s " generated.")
+    System.log file_name
   else
-    log (LString.s "Cannot generate " ++ file_name ++ LString.s ".").
+    System.log (LString.s "Cannot generate " ++ file_name ++ LString.s ".").
 
 Definition generate_index (packages : list Package.t) : C unit :=
   generate_file (LString.s "index.html") (View.Index.page packages).
 
 Definition generate_version (name : LString.t) (version : Version.t) : C unit :=
   let file_name := name ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
-  generate_file file_name View.Version.page.
+  generate_file file_name (View.Version.page name version).
 
 Fixpoint generate_versions (name : LString.t) (versions : list Version.t)
   : C unit :=
@@ -176,9 +176,8 @@ Fixpoint generate_packages (packages : list Package.t) : C unit :=
   | [] => ret tt
   | package :: packages =>
     let (name, versions) := package in
-    let! _ : unit * unit := join
-      (generate_versions name versions) (generate_packages packages) in
-    ret tt
+    do! generate_versions name versions in
+    generate_packages packages
   end.
 
 Definition main (argv : list LString.t) : C unit :=
