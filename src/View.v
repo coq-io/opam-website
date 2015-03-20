@@ -43,11 +43,10 @@ Definition title (packages : list Package.t) : LString.t :=
   LString.s "          <h1>" ++ LString.of_N 10 10 None nb_packages ++
   LString.s " packages <small>" ++ LString.of_N 10 10 None nb_versions ++
   LString.s " versions</small></h1>
-        <p>Activate the stable or unstable repositories:</p>
-        <pre>opam repo add coq-stable https://github.com/coq/repo-stable.git
-opam repo add coq-unstable https://github.com/coq/repo-unstable.git</pre>
+        <p>Activate the Coq OPAM repository:</p>
+        <pre>opam repo add coq-stable https://github.com/coq/repo-stable.git</pre>
         <p>Install a package:</p>
-        <pre>opam install -j4 coq:package</pre>
+        <pre>opam install -j4 package</pre>
 ".
 
 (** A row in the table of packages. *)
