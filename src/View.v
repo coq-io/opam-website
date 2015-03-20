@@ -111,8 +111,34 @@ Module Version.
   Definition title (name : LString.t) (version : Version.t) : LString.t :=
     LString.s "          <h1>" ++ name ++
     LString.s " <small>" ++ Version.version version ++ LString.s "</small></h1>
-  ".
+".
+
+  Definition description (name : LString.t) (version : Version.t) : LString.t :=
+    LString.s "          <p class=""lead"">" ++ Version.description version ++ LString.s "</p>
+          <pre>opam install -j4 " ++ name ++ LString.s "." ++ Version.version version ++ LString.s "</pre>
+".
+
+Definition field (is_url : bool) (name value : LString.t) : LString.t :=
+  let value :=
+    if is_url then
+      LString.s "<a href=""" ++ value ++ LString.s """>" ++ value ++ LString.s "</a>"
+    else
+      value in
+  LString.s "            <dt>" ++ name ++ LString.s "</dt>
+            <dd>" ++ value ++ LString.s "</dd>
+".
+
+  Definition fields (version : Version.t) : LString.t :=
+    LString.s "          <dl class=""dl-horizontal"">
+" ++ field true (LString.s "homepage") (Version.homepage version) ++
+field false (LString.s "license") (Version.license version) ++
+field true (LString.s "bugs tracker") (Version.bug version) ++
+field false (LString.s "dependencies") (Version.dependencies version) ++
+field true (LString.s "url") (Version.url version) ++
+field true (LString.s "package") (Version.meta version) ++
+LString.s "          </dl>
+".
 
   Definition page (name : LString.t) (version : Version.t) : LString.t :=
-    header ++ title name version ++ footer.
+    header ++ title name version ++ description name version ++ fields version ++ footer.
 End Version.
