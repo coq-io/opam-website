@@ -73,7 +73,7 @@ Module Index.
     | [] => LString.s ""
     | last_version :: _ => LString.s
 "              <tr>
-                <td><a href=""/" ++ name ++ LString.s "/" ++ Version.version last_version ++ LString.s ".html"">" ++ name ++ LString.s "</a></td>
+                <td><a href=""/" ++ name ++ LString.s "." ++ Version.version last_version ++ LString.s ".html"">" ++ name ++ LString.s "</a></td>
                 <td>" ++ Version.version last_version ++ LString.s "</td>
                 <td>" ++ Version.description last_version ++ LString.s "</td>
               </tr>

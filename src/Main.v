@@ -146,18 +146,45 @@ Definition get_packages : C (list Package.t) :=
     end
   end.
 
-Definition generate_index (packages : list Package.t) : C unit :=
-  let index_content := View.Index.page packages in
-  let index_name := LString.s "html/index.html" in
-  let! is_success := System.write_file index_name index_content in
+Definition generate_file (file_name file_content : LString.t) : C unit :=
+  let file_name := LString.s "html/" ++ file_name in
+  let! is_success := System.write_file file_name file_content in
   if is_success then
-    log (index_name ++ LString.s " generated.")
+    log (file_name ++ LString.s " generated.")
   else
-    log (LString.s "Cannot generate " ++ index_name ++ LString.s ".").
+    log (LString.s "Cannot generate " ++ file_name ++ LString.s ".").
+
+Definition generate_index (packages : list Package.t) : C unit :=
+  generate_file (LString.s "index.html") (View.Index.page packages).
+
+Definition generate_version (name : LString.t) (version : Version.t) : C unit :=
+  let file_name := name ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
+  generate_file file_name View.Version.page.
+
+Fixpoint generate_versions (name : LString.t) (versions : list Version.t)
+  : C unit :=
+  match versions with
+  | [] => ret tt
+  | version :: versions =>
+    let! _ : unit * unit := join
+      (generate_version name version) (generate_versions name versions) in
+    ret tt
+  end.
+
+Fixpoint generate_packages (packages : list Package.t) : C unit :=
+  match packages with
+  | [] => ret tt
+  | package :: packages =>
+    let (name, versions) := package in
+    let! _ : unit * unit := join
+      (generate_versions name versions) (generate_packages packages) in
+    ret tt
+  end.
 
 Definition main (argv : list LString.t) : C unit :=
   let! packages := get_packages in
-  generate_index packages.
+  do! generate_index packages in
+  generate_packages packages.
 
 (** The extracted program. *)
 Definition opamWebsite : unit := Extraction.run main.
