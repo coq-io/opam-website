@@ -13,7 +13,15 @@ Local Open Scope list.
 Definition C := C.t System.effect.
 
 Module Version.
-  Definition t := LString.t.
+  Record t := New {
+    version : LString.t;
+    description : LString.t;
+    license : LString.t;
+    homepage : LString.t;
+    bug : LString.t;
+    url : LString.t;
+    dependencies : LString.t;
+    meta : LString.t }.
 End Version.
 
 Module Package.
@@ -22,11 +30,14 @@ Module Package.
     versions : list Version.t }.
 End Package.
 
+Definition print_version (version : Version.t) : C unit :=
+  System.log @@ Version.version version.
+
 Fixpoint print_versions (versions : list Version.t) : C unit :=
   match versions with
   | [] => ret tt
   | version :: versions =>
-    do! System.log version in
+    do! print_version version in
     print_versions versions
   end.
 
@@ -42,8 +53,8 @@ Fixpoint print_packages (packages : list Package.t) : C unit :=
     print_packages packages
   end.
 
-Definition get_versions (is_plural : bool) (name : LString.t)
-  : C (list Version.t) :=
+Definition get_version_numbers (is_plural : bool) (name : LString.t)
+  : C (list LString.t) :=
   let field :=
     if is_plural then
       "--field=available-versions"
@@ -69,15 +80,40 @@ Definition get_versions (is_plural : bool) (name : LString.t)
     end
   end.
 
+Definition get_version (name version : LString.t) : C Version.t :=
+  ret @@ Version.New
+    version
+    []
+    []
+    []
+    []
+    []
+    []
+    [].
+
+Fixpoint get_versions_of_numbers (name : LString.t) (numbers : list LString.t)
+  : C (list Version.t) :=
+  match numbers with
+  | [] => ret []
+  | number :: numbers =>
+    let! version := get_version name number in
+    let! versions := get_versions_of_numbers name numbers in
+    ret (version :: versions)
+  end.
+
+Definition get_versions (name : LString.t) : C (list Version.t) :=
+  let! single_numbers := get_version_numbers false name in
+  let! many_numbers := get_version_numbers true name in
+  let numbers := single_numbers ++ many_numbers in
+  get_versions_of_numbers name numbers.
+
 Fixpoint get_packages_of_names (names : list LString.t) : C (list Package.t) :=
   match names with
   | [] => ret []
   | name :: names =>
     do! System.log name in
     let! package_packages := join
-      (let! single_versions := get_versions false name in
-      let! many_versions := get_versions true name in
-      let versions := single_versions ++ many_versions in
+      (let! versions := get_versions name in
       ret @@ Package.New name versions)
       (get_packages_of_names names) in
     let (package, packages) := package_packages in
