@@ -14,36 +14,6 @@ Local Open Scope list.
 
 Definition C := C.t Api.effect.
 
-Definition print_version (version : Version.t) : C unit :=
-  do! Api.log @@ Version.version version in
-  do! Api.log @@ Version.description version in
-  do! Api.log @@ Version.license version in
-  do! Api.log @@ Version.homepage version in
-  do! Api.log @@ Version.bug version in
-  do! Api.log @@ Version.url version in
-  do! Api.log @@ Version.dependencies version in
-  Api.log @@ Version.meta version.
-
-Fixpoint print_versions (versions : list Version.t) : C unit :=
-  match versions with
-  | [] => ret tt
-  | version :: versions =>
-    do! print_version version in
-    print_versions versions
-  end.
-
-Definition print_package (package : Package.t) : C unit :=
-  do! Api.log @@ Package.name package in
-  print_versions @@ Package.versions package.
-
-Fixpoint print_packages (packages : list Package.t) : C unit :=
-  match packages with
-  | [] => ret tt
-  | package :: packages =>
-    do! print_package package in
-    print_packages packages
-  end.
-
 Definition get_version_numbers (is_plural : bool) (name : LString.t)
   : C (list LString.t) :=
   let field :=
