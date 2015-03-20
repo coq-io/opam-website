@@ -74,11 +74,13 @@ Fixpoint get_packages_of_names (names : list LString.t) : C (list Package.t) :=
   | [] => ret []
   | name :: names =>
     do! System.log name in
-    let! single_versions := get_versions false name in
-    let! many_versions := get_versions true name in
-    let versions := single_versions ++ many_versions in
-    let package := Package.New name versions in
-    let! packages := get_packages_of_names names in
+    let! package_packages := join
+      (let! single_versions := get_versions false name in
+      let! many_versions := get_versions true name in
+      let versions := single_versions ++ many_versions in
+      ret @@ Package.New name versions)
+      (get_packages_of_names names) in
+    let (package, packages) := package_packages in
     ret (package :: packages)
   end.
 
