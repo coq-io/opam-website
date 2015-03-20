@@ -93,7 +93,7 @@ Definition footer : LString.t :=
       <hr/>
       <div class=""footer"">
         <p class=""text-center"">
-          <small>Sources are on <a href=""https://github.com/clarus/repos2web"">GitHub</a>. © Guillaume Claret</small>
+          <small>Sources are on <a href=""https://github.com/clarus/coq-opam-website"">GitHub</a>. © Guillaume Claret</small>
         </p>
       </div>
     </div>
