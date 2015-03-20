@@ -4,6 +4,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import FunctionNinjas.All.
 Require Import Io.System.All.
 Require Import ListString.All.
+Require Import Model.
 
 Import ListNotations.
 Import C.Notations.
@@ -11,24 +12,6 @@ Local Open Scope string.
 Local Open Scope list.
 
 Definition C := C.t System.effect.
-
-Module Version.
-  Record t := New {
-    version : LString.t;
-    description : LString.t;
-    license : LString.t;
-    homepage : LString.t;
-    bug : LString.t;
-    url : LString.t;
-    dependencies : LString.t;
-    meta : LString.t }.
-End Version.
-
-Module Package.
-  Record t := New {
-    name : LString.t;
-    versions : list Version.t }.
-End Package.
 
 Definition print_version (version : Version.t) : C unit :=
   do! System.log @@ Version.version version in
