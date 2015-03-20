@@ -71,8 +71,7 @@ Definition table (packages : list Package.t) : LString.t :=
     | Gt => false
     end) in
   LString.s
-"         <h2>Table</h2>
-          <table class=""table table-striped text-center"">
+"         <table class=""table table-striped text-center"">
             <thead>
               <tr>
                 <td><strong>Name</strong></td>

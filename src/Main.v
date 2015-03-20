@@ -76,24 +76,29 @@ Definition get_version_numbers (is_plural : bool) (name : LString.t)
 
 Definition get_version (name version : LString.t) : C Version.t :=
   let full_name := name ++ LString.s "." ++ version in
-  let! description := get_field (LString.s "description") full_name in
-  let! license := get_field (LString.s "license") full_name in
-  let! homepage := get_field (LString.s "homepage") full_name in
-  let! bug := get_field (LString.s "bug-reports") full_name in
-  let! url := get_field (LString.s "upstream-url") full_name in
-  let! dependencies := get_field (LString.s "depends") full_name in
+  let get_field field := get_field (LString.s field) full_name in
+  let! fields :=
+    join (get_field "description") @@
+    join (get_field "license") @@
+    join (get_field "homepage") @@
+    join (get_field "bug-reports") @@
+    join (get_field "upstream-url") @@
+    (get_field "depends") in
   let meta :=
     LString.s "https://github.com/coq/repo-stable/tree/master/packages/" ++
     name ++ LString.s "/" ++ full_name in
-  ret @@ Version.New
-    version
-    description
-    license
-    homepage
-    bug
-    url
-    dependencies
-    meta.
+  match fields with
+  | (description, (license, (homepage, (bug, (url, dependencies))))) =>
+    ret @@ Version.New
+      version
+      description
+      license
+      homepage
+      bug
+      url
+      dependencies
+      meta
+  end.
 
 Fixpoint get_versions_of_numbers (name : LString.t) (numbers : list LString.t)
   : C (list Version.t) :=
@@ -116,11 +121,9 @@ Fixpoint get_packages_of_names (names : list LString.t) : C (list Package.t) :=
   | [] => ret []
   | name :: names =>
     do! System.log name in
-    let! package_packages := join
-      (let! versions := get_versions name in
-      ret @@ Package.New name versions)
-      (get_packages_of_names names) in
-    let (package, packages) := package_packages in
+    let! versions := get_versions name in
+    let package := Package.New name versions in
+    let! packages := get_packages_of_names names in
     ret (package :: packages)
   end.
 
