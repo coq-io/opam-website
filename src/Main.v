@@ -5,6 +5,7 @@ Require Import FunctionNinjas.All.
 Require Import Io.System.All.
 Require Import ListString.All.
 Require Import Model.
+Require View.
 
 Import ListNotations.
 Import C.Notations.
@@ -144,7 +145,13 @@ Definition get_packages : C (list Package.t) :=
 
 Definition main (argv : list LString.t) : C unit :=
   let! packages := get_packages in
-  print_packages packages.
+  let index_content := View.index packages in
+  let index_name := LString.s "html/index.html" in
+  let! is_success := System.write_file index_name index_content in
+  if is_success then
+    log (index_name ++ LString.s " generated.")
+  else
+    log (LString.s "Cannot generate " ++ index_name ++ LString.s ".").
 
 (** The extracted program. *)
 Definition opamWebsite : unit := Extraction.run main.
