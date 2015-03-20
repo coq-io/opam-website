@@ -148,8 +148,3 @@ Definition main (argv : list LString.t) : C unit :=
   let! packages := get_packages in
   do! generate_index packages in
   generate_packages packages.
-
-(*
-(** The extracted program. *)
-Definition opamWebsite : unit := Extraction.run main.
-Extraction "extraction/opamWebsite" opamWebsite. *)

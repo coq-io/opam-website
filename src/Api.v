@@ -43,7 +43,18 @@ Module Error.
   Inductive t :=
   | OpamList
   | OpamField (field package : LString.t)
-  | WriteHtml (name content : LString.t).
+  | WriteHtml (name : LString.t).
+
+  Definition run (err : t) : C.t System.effect unit :=
+    match err with
+    | OpamList => System.log @@ LString.s "Cannot list the available packages."
+    | OpamField field package =>
+      System.log (LString.s "Cannot get the field " ++ field ++
+        LString.s " of " ++ package ++ LString.s ".")
+    | WriteHtml name =>
+      System.log (LString.s "Cannot generate the HTML file " ++ name ++
+        LString.s ".")
+    end.
 End Error.
 
 Definition run_opam_list : C.t System.effect (LString.t + Error.t) :=
@@ -81,7 +92,7 @@ Definition run_write_html (name content : LString.t)
   if is_success then
     ret @@ inl tt
   else
-    ret @@ inr (Error.WriteHtml name content).
+    ret @@ inr (Error.WriteHtml name).
 
 Definition run_command (c : command) : C.t System.effect (answer c + Error.t) :=
   match c with
@@ -116,4 +127,12 @@ Fixpoint run {A : Type} (x : C.t effect A) : C.t System.effect (A + Error.t) :=
     | inr (inl y) => ret @@ inl (inr y)
     | inl (inr err) | inr (inr err) => ret @@ inr err
     end
+  end.
+
+Definition handle_errors (x : C.t System.effect (unit + Error.t))
+  : C.t System.effect unit :=
+  let! x := x in
+  match x with
+  | inl _ => ret tt
+  | inr err => Error.run err
   end.
