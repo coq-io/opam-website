@@ -4,6 +4,7 @@ Require Import FunctionNinjas.All.
 Require Import Io.System.All.
 Require Import ListString.All.
 Require Api.
+Require IoList.
 Require Import Model.
 Require View.
 
@@ -54,39 +55,21 @@ Definition get_version (name version : LString.t) : C Version.t :=
       meta
   end.
 
-Fixpoint get_versions_of_numbers (name : LString.t) (numbers : list LString.t)
-  : C (list Version.t) :=
-  match numbers with
-  | [] => ret []
-  | number :: numbers =>
-    let! version := get_version name number in
-    let! versions := get_versions_of_numbers name numbers in
-    ret (version :: versions)
-  end.
-
 Definition get_versions (name : LString.t) : C (list Version.t) :=
   let! single_numbers := get_version_numbers false name in
   let! many_numbers := get_version_numbers true name in
   let numbers := single_numbers ++ many_numbers in
-  get_versions_of_numbers name numbers.
-
-Fixpoint get_packages_of_names (names : list LString.t) : C (list Package.t) :=
-  match names with
-  | [] => ret []
-  | name :: names =>
-    do! Api.log name in
-    let! versions := get_versions name in
-    let package := Package.New name versions in
-    let! packages := get_packages_of_names names in
-    ret (package :: packages)
-  end.
+  IoList.map (get_version name) numbers.
 
 Definition get_packages : C (list Package.t) :=
   let! names := Api.opam_list in
   let names := LString.split names (LString.Char.n) in
   let names := names |> List.filter (fun name =>
     negb @@ LString.is_empty name) in
-  get_packages_of_names names.
+  names |> IoList.map (fun name =>
+    do! Api.log name in
+    let! versions := get_versions name in
+    ret @@ Package.New name versions).
 
 Definition generate_index (packages : list Package.t) : C unit :=
   Api.write_html (LString.s "index.html") (View.Index.page packages).
@@ -95,24 +78,9 @@ Definition generate_version (package : Package.t) (version : Version.t) : C unit
   let name := Package.name package ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
   Api.write_html name (View.Version.page package version).
 
-Fixpoint generate_versions (package : Package.t) (versions : list Version.t)
-  : C unit :=
-  match versions with
-  | [] => ret tt
-  | version :: versions =>
-    let! _ : unit * unit := join
-      (generate_version package version)
-      (generate_versions package versions) in
-    ret tt
-  end.
-
-Fixpoint generate_packages (packages : list Package.t) : C unit :=
-  match packages with
-  | [] => ret tt
-  | package :: packages =>
-    do! generate_versions package (Package.versions package) in
-    generate_packages packages
-  end.
+Definition generate_packages (packages : list Package.t) : C unit :=
+  packages |> IoList.iter (fun package =>
+    Package.versions package |> IoList.iter_par (generate_version package)).
 
 Definition main (argv : list LString.t) : C unit :=
   let! packages := get_packages in

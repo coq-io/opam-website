@@ -2,6 +2,7 @@
 
 src/Api.v
 src/Extract.v
+src/IoList.v
 src/Main.v
 src/Model.v
 src/View.v
