@@ -60,32 +60,34 @@ Fixpoint print_packages (packages : list Package.t) : C unit :=
     print_packages packages
   end.
 
+Definition get_field (field name : LString.t) : C LString.t :=
+  let command := [LString.s "opam"; LString.s "info"; field; name] in
+  let! result := System.eval command in
+  match result with
+  | None =>
+    do! System.log @@ LString.s "Cannot run the command to get a field of a package." in
+    ret @@ LString.s ""
+  | Some (status, output, err) =>
+    let! _ : bool := System.print err in
+    match status with
+    | 0%Z => ret @@ LString.trim output
+    | _ => ret @@ LString.s ""
+    end
+  end.
+
 Definition get_version_numbers (is_plural : bool) (name : LString.t)
   : C (list LString.t) :=
   let field :=
     if is_plural then
-      "--field=available-versions"
+      LString.s "--field=available-versions"
     else
-      "--field=available-version" in
-  let command := List.map LString.s [
-    "opam"; "info"; field; LString.to_string name] in
-  let! result := System.eval command in
-  match result with
-  | None =>
-    do! System.log @@ LString.s "Cannot run the command to get the list of versions." in
-    ret nil
-  | Some (status, versions, err) =>
-    let! _ : bool := System.print err in
-    match status with
-    | 0%Z =>
-      let versions := LString.split versions "," in
-      let versions := List.map LString.trim versions in
-      let versions := versions |> List.filter (fun version =>
-        negb @@ LString.is_empty version) in
-      ret versions
-    | _ => ret nil
-    end
-  end.
+      LString.s "--field=available-version" in
+  let! versions := get_field field name in
+  let versions := LString.split versions "," in
+  let versions := List.map LString.trim versions in
+  let versions := versions |> List.filter (fun version =>
+    negb @@ LString.is_empty version) in
+  ret versions.
 
 Definition get_version (name version : LString.t) : C Version.t :=
   ret @@ Version.New
