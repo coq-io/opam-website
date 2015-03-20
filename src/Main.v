@@ -12,17 +12,48 @@ Import C.Notations.
 Local Open Scope string.
 Local Open Scope list.
 
-Definition C := C.t System.effect.
+Module Api.
+  Inductive command :=
+  | Log (message : LString.t)
+  | OpamList
+  | OpamField (field package : LString.t)
+  | WriteHtml (name content : LString.t).
+
+  Definition answer (c : command) : Type :=
+    match c with
+    | Log _ => unit
+    | OpamList => LString.t
+    | OpamField _ _ => LString.t
+    | WriteHtml _ _ => unit
+    end.
+
+  Definition effect : Effect.t :=
+    Effect.New command answer.
+
+  Definition log (message : LString.t) : C.t effect unit :=
+    call effect (Log message).
+
+  Definition opam_list : C.t effect (LString.t) :=
+    call effect OpamList.
+
+  Definition opam_field (field package : LString.t) : C.t effect LString.t :=
+    call effect (OpamField field package).
+
+  Definition write_html (name content : LString.t) : C.t effect unit :=
+    call effect (WriteHtml name content).
+End Api.
+
+Definition C := C.t Api.effect.
 
 Definition print_version (version : Version.t) : C unit :=
-  do! System.log @@ Version.version version in
-  do! System.log @@ Version.description version in
-  do! System.log @@ Version.license version in
-  do! System.log @@ Version.homepage version in
-  do! System.log @@ Version.bug version in
-  do! System.log @@ Version.url version in
-  do! System.log @@ Version.dependencies version in
-  System.log @@ Version.meta version.
+  do! Api.log @@ Version.version version in
+  do! Api.log @@ Version.description version in
+  do! Api.log @@ Version.license version in
+  do! Api.log @@ Version.homepage version in
+  do! Api.log @@ Version.bug version in
+  do! Api.log @@ Version.url version in
+  do! Api.log @@ Version.dependencies version in
+  Api.log @@ Version.meta version.
 
 Fixpoint print_versions (versions : list Version.t) : C unit :=
   match versions with
@@ -33,7 +64,7 @@ Fixpoint print_versions (versions : list Version.t) : C unit :=
   end.
 
 Definition print_package (package : Package.t) : C unit :=
-  do! System.log @@ Package.name package in
+  do! Api.log @@ Package.name package in
   print_versions @@ Package.versions package.
 
 Fixpoint print_packages (packages : list Package.t) : C unit :=
@@ -44,22 +75,6 @@ Fixpoint print_packages (packages : list Package.t) : C unit :=
     print_packages packages
   end.
 
-Definition get_field (field name : LString.t) : C LString.t :=
-  let field := LString.s "--field=" ++ field in
-  let command := [LString.s "opam"; LString.s "info"; field; name] in
-  let! result := System.eval command in
-  match result with
-  | None =>
-    do! System.log @@ LString.s "Cannot run the command to get a field of a package." in
-    ret @@ LString.s ""
-  | Some (status, output, err) =>
-    let! _ : bool := System.print err in
-    match status with
-    | 0%Z => ret @@ LString.trim output
-    | _ => ret @@ LString.s ""
-    end
-  end.
-
 Definition get_version_numbers (is_plural : bool) (name : LString.t)
   : C (list LString.t) :=
   let field :=
@@ -67,7 +82,7 @@ Definition get_version_numbers (is_plural : bool) (name : LString.t)
       LString.s "available-versions"
     else
       LString.s "available-version" in
-  let! versions := get_field field name in
+  let! versions := Api.opam_field field name in
   let versions := LString.split versions "," in
   let versions := List.map LString.trim versions in
   let versions := versions |> List.filter (fun version =>
@@ -76,7 +91,7 @@ Definition get_version_numbers (is_plural : bool) (name : LString.t)
 
 Definition get_version (name version : LString.t) : C Version.t :=
   let full_name := name ++ LString.s "." ++ version in
-  let get_field field := get_field (LString.s field) full_name in
+  let get_field field := Api.opam_field (LString.s field) full_name in
   let! fields :=
     join (get_field "description") @@
     join (get_field "license") @@
@@ -120,7 +135,7 @@ Fixpoint get_packages_of_names (names : list LString.t) : C (list Package.t) :=
   match names with
   | [] => ret []
   | name :: names =>
-    do! System.log name in
+    do! Api.log name in
     let! versions := get_versions name in
     let package := Package.New name versions in
     let! packages := get_packages_of_names names in
@@ -128,38 +143,18 @@ Fixpoint get_packages_of_names (names : list LString.t) : C (list Package.t) :=
   end.
 
 Definition get_packages : C (list Package.t) :=
-  let command := List.map LString.s ["opam"; "search"; "--short"; "coq:"] in
-  let! result := System.eval command in
-  match result with
-  | None =>
-    do! System.log @@ LString.s "Cannot run the command the list of packages." in
-    ret nil
-  | Some (status, names, err) =>
-    let! _ : bool := System.print err in
-    match status with
-    | 0%Z =>
-      let names := LString.split names (LString.Char.n) in
-      let names := names |> List.filter (fun name =>
-        negb @@ LString.is_empty name) in
-      get_packages_of_names names
-    | _ => ret nil
-    end
-  end.
-
-Definition generate_file (file_name file_content : LString.t) : C unit :=
-  let file_name := LString.s "html/" ++ file_name in
-  let! is_success := System.write_file file_name file_content in
-  if is_success then
-    System.log file_name
-  else
-    System.log (LString.s "Cannot generate " ++ file_name ++ LString.s ".").
+  let! names := Api.opam_list in
+  let names := LString.split names (LString.Char.n) in
+  let names := names |> List.filter (fun name =>
+    negb @@ LString.is_empty name) in
+  get_packages_of_names names.
 
 Definition generate_index (packages : list Package.t) : C unit :=
-  generate_file (LString.s "index.html") (View.Index.page packages).
+  Api.write_html (LString.s "index.html") (View.Index.page packages).
 
 Definition generate_version (package : Package.t) (version : Version.t) : C unit :=
-  let file_name := Package.name package ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
-  generate_file file_name (View.Version.page package version).
+  let name := Package.name package ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
+  Api.write_html name (View.Version.page package version).
 
 Fixpoint generate_versions (package : Package.t) (versions : list Version.t)
   : C unit :=
@@ -185,6 +180,7 @@ Definition main (argv : list LString.t) : C unit :=
   do! generate_index packages in
   generate_packages packages.
 
+(*
 (** The extracted program. *)
 Definition opamWebsite : unit := Extraction.run main.
-Extraction "extraction/opamWebsite" opamWebsite.
+Extraction "extraction/opamWebsite" opamWebsite. *)
