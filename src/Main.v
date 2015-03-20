@@ -61,6 +61,7 @@ Fixpoint print_packages (packages : list Package.t) : C unit :=
   end.
 
 Definition get_field (field name : LString.t) : C LString.t :=
+  let field := LString.s "--field=" ++ field in
   let command := [LString.s "opam"; LString.s "info"; field; name] in
   let! result := System.eval command in
   match result with
@@ -79,9 +80,9 @@ Definition get_version_numbers (is_plural : bool) (name : LString.t)
   : C (list LString.t) :=
   let field :=
     if is_plural then
-      LString.s "--field=available-versions"
+      LString.s "available-versions"
     else
-      LString.s "--field=available-version" in
+      LString.s "available-version" in
   let! versions := get_field field name in
   let versions := LString.split versions "," in
   let versions := List.map LString.trim versions in
@@ -90,15 +91,25 @@ Definition get_version_numbers (is_plural : bool) (name : LString.t)
   ret versions.
 
 Definition get_version (name version : LString.t) : C Version.t :=
+  let full_name := name ++ LString.s "." ++ version in
+  let! description := get_field (LString.s "description") full_name in
+  let! license := get_field (LString.s "license") full_name in
+  let! homepage := get_field (LString.s "homepage") full_name in
+  let! bug := get_field (LString.s "bug-reports") full_name in
+  let! url := get_field (LString.s "upstream-url") full_name in
+  let! dependencies := get_field (LString.s "depends") full_name in
+  let meta :=
+    LString.s "https://github.com/coq/repo-stable/tree/master/packages/" ++
+    name ++ LString.s "/" ++ full_name in
   ret @@ Version.New
     version
-    []
-    []
-    []
-    []
-    []
-    []
-    [].
+    description
+    license
+    homepage
+    bug
+    url
+    dependencies
+    meta.
 
 Fixpoint get_versions_of_numbers (name : LString.t) (numbers : list LString.t)
   : C (list Version.t) :=
