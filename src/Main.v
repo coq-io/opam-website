@@ -8,6 +8,7 @@ Require Import ListString.All.
 Import ListNotations.
 Import C.Notations.
 Local Open Scope string.
+Local Open Scope list.
 
 Definition C := C.t System.effect.
 
@@ -41,11 +42,16 @@ Fixpoint print_packages (packages : list Package.t) : C unit :=
     print_packages packages
   end.
 
-Definition get_versions (name : LString.t) : C (list Version.t) :=
+Definition get_versions (is_plural : bool) (name : LString.t)
+  : C (list Version.t) :=
+  let field :=
+    if is_plural then
+      "--field=available-versions"
+    else
+      "--field=available-version" in
   let command := List.map LString.s [
-    "opam"; "info"; "--field=available-versions"; LString.to_string name] in
+    "opam"; "info"; field; LString.to_string name] in
   let! result := System.eval command in
-  do! System.log name in
   match result with
   | None =>
     do! System.log @@ LString.s "Cannot run the command to get the list of versions." in
@@ -54,8 +60,10 @@ Definition get_versions (name : LString.t) : C (list Version.t) :=
     let! _ : bool := System.print err in
     match status with
     | 0%Z =>
-      let versions := LString.split versions (LString.Char.n) in
+      let versions := LString.split versions "," in
       let versions := List.map LString.trim versions in
+      let versions := versions |> List.filter (fun version =>
+        negb @@ LString.is_empty version) in
       ret versions
     | _ => ret nil
     end
@@ -65,7 +73,10 @@ Fixpoint get_packages_of_names (names : list LString.t) : C (list Package.t) :=
   match names with
   | [] => ret []
   | name :: names =>
-    let! versions := get_versions name in
+    do! System.log name in
+    let! single_versions := get_versions false name in
+    let! many_versions := get_versions true name in
+    let versions := single_versions ++ many_versions in
     let package := Package.New name versions in
     let! packages := get_packages_of_names names in
     ret (package :: packages)
