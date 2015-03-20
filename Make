@@ -5,4 +5,5 @@ src/Extract.v
 src/IoList.v
 src/Main.v
 src/Model.v
+src/Spec.v
 src/View.v
