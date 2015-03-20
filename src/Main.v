@@ -157,17 +157,18 @@ Definition generate_file (file_name file_content : LString.t) : C unit :=
 Definition generate_index (packages : list Package.t) : C unit :=
   generate_file (LString.s "index.html") (View.Index.page packages).
 
-Definition generate_version (name : LString.t) (version : Version.t) : C unit :=
-  let file_name := name ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
-  generate_file file_name (View.Version.page name version).
+Definition generate_version (package : Package.t) (version : Version.t) : C unit :=
+  let file_name := Package.name package ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
+  generate_file file_name (View.Version.page package version).
 
-Fixpoint generate_versions (name : LString.t) (versions : list Version.t)
+Fixpoint generate_versions (package : Package.t) (versions : list Version.t)
   : C unit :=
   match versions with
   | [] => ret tt
   | version :: versions =>
     let! _ : unit * unit := join
-      (generate_version name version) (generate_versions name versions) in
+      (generate_version package version)
+      (generate_versions package versions) in
     ret tt
   end.
 
@@ -175,8 +176,7 @@ Fixpoint generate_packages (packages : list Package.t) : C unit :=
   match packages with
   | [] => ret tt
   | package :: packages =>
-    let (name, versions) := package in
-    do! generate_versions name versions in
+    do! generate_versions package (Package.versions package) in
     generate_packages packages
   end.
 

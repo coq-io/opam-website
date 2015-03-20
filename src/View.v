@@ -108,9 +108,29 @@ Module Index.
 End Index.
 
 Module Version.
-  Definition title (name : LString.t) (version : Version.t) : LString.t :=
-    LString.s "          <h1>" ++ name ++
-    LString.s " <small>" ++ Version.version version ++ LString.s "</small></h1>
+  Definition title (name : LString.t) : LString.t :=
+    LString.s "          <h1>" ++ name ++ LString.s "</h1>
+".
+
+  Definition version_link (is_active : bool) (name : LString.t)
+    (version : Version.t) : LString.t :=
+    let class :=
+      if is_active then
+        LString.s " class=""active"""
+      else
+        LString.s "" in
+    let url := LString.s "/" ++ name ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
+    LString.s "          <li role=""presentation""" ++ class ++
+    LString.s "><a href=""" ++ url ++ LString.s """>" ++ Version.version version ++
+    LString.s "</a></li>
+".
+
+  Definition other_versions (name : LString.t) (version : Version.t)
+    (versions : list Version.t) : LString.t :=
+    LString.s "         <ul class=""nav nav-pills"">
+" ++ LString.join (LString.s "") (versions |> List.map (fun version' =>
+  version_link (LString.eqb (Version.version version) (Version.version version')) name version')) ++
+LString.s "        </ul>
 ".
 
   Definition description (name : LString.t) (version : Version.t) : LString.t :=
@@ -134,11 +154,13 @@ Definition field (is_url : bool) (name value : LString.t) : LString.t :=
 field false (LString.s "license") (Version.license version) ++
 field true (LString.s "bugs tracker") (Version.bug version) ++
 field false (LString.s "dependencies") (Version.dependencies version) ++
-field true (LString.s "url") (Version.url version) ++
+field true (LString.s "source") (Version.url version) ++
 field true (LString.s "package") (Version.meta version) ++
 LString.s "          </dl>
 ".
 
-  Definition page (name : LString.t) (version : Version.t) : LString.t :=
-    header ++ title name version ++ description name version ++ fields version ++ footer.
+  Definition page (package : Package.t) (version : Version.t) : LString.t :=
+    let (name, versions) := package in
+    header ++ title name ++ other_versions name version versions ++
+    description name version ++ fields version ++ footer.
 End Version.
