@@ -146,15 +146,18 @@ Definition get_packages : C (list Package.t) :=
     end
   end.
 
-Definition main (argv : list LString.t) : C unit :=
-  let! packages := get_packages in
-  let index_content := View.index packages in
+Definition generate_index (packages : list Package.t) : C unit :=
+  let index_content := View.Index.page packages in
   let index_name := LString.s "html/index.html" in
   let! is_success := System.write_file index_name index_content in
   if is_success then
     log (index_name ++ LString.s " generated.")
   else
     log (LString.s "Cannot generate " ++ index_name ++ LString.s ".").
+
+Definition main (argv : list LString.t) : C unit :=
+  let! packages := get_packages in
+  generate_index packages.
 
 (** The extracted program. *)
 Definition opamWebsite : unit := Extraction.run main.

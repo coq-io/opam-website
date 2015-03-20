@@ -36,55 +36,6 @@ Definition header : LString.t :=
         <div class=""col-md-12"">
 ".
 
-(** The title with the number of packages. *)
-Definition title (packages : list Package.t) : LString.t :=
-  let nb_packages : N := N.of_nat @@ List.length packages in
-  let nb_versions : N := N.of_nat @@ Package.number_of_versions packages in
-  LString.s "          <h1>" ++ LString.of_N 10 10 None nb_packages ++
-  LString.s " packages <small>" ++ LString.of_N 10 10 None nb_versions ++
-  LString.s " versions</small></h1>
-        <p>Activate the Coq OPAM repository:</p>
-        <pre>opam repo add coq-stable https://github.com/coq/repo-stable.git</pre>
-        <p>Install a package:</p>
-        <pre>opam install -j4 package</pre>
-".
-
-(** A row in the table of packages. *)
-Definition row (package : Package.t) : LString.t :=
-  let (name, versions) := package in
-  match List.rev versions with
-  | [] => LString.s ""
-  | last_version :: _ => LString.s
-"              <tr>
-                <td>" ++ name ++ LString.s "</td>
-                <td>" ++ Version.version last_version ++ LString.s "</td>
-                <td>" ++ Version.description last_version ++ LString.s "</td>
-              </tr>
-"
-  end.
-
-(** The table of packages. *)
-Definition table (packages : list Package.t) : LString.t :=
-  let packages := packages |> Sort.sort (fun a b =>
-    match LString.compare (Package.name a) (Package.name b) with
-    | Lt | Eq => true
-    | Gt => false
-    end) in
-  LString.s
-"         <table class=""table table-striped text-center"">
-            <thead>
-              <tr>
-                <td><strong>Name</strong></td>
-                <td><strong>Version</strong></td>
-                <td><strong>Description</strong></td>
-              </tr>
-            </thead>
-            <tbody>
-" ++ LString.join [] (List.map row packages) ++ LString.s
-"            </tbody>
-          </table>
-".
-
 (** The footer of the page. *)
 Definition footer : LString.t :=
   LString.s
@@ -101,6 +52,62 @@ Definition footer : LString.t :=
 </html>
 ".
 
-(** The index page. *)
-Definition index (packages : list Package.t) : LString.t :=
-  header ++ title packages ++ table packages ++ footer.
+Module Index.
+  (** The title with the number of packages. *)
+  Definition title (packages : list Package.t) : LString.t :=
+    let nb_packages : N := N.of_nat @@ List.length packages in
+    let nb_versions : N := N.of_nat @@ Package.number_of_versions packages in
+    LString.s "          <h1>" ++ LString.of_N 10 10 None nb_packages ++
+    LString.s " packages <small>" ++ LString.of_N 10 10 None nb_versions ++
+    LString.s " versions</small></h1>
+        <p>Activate the Coq OPAM repository:</p>
+        <pre>opam repo add coq-stable https://github.com/coq/repo-stable.git</pre>
+        <p>Install a package:</p>
+        <pre>opam install -j4 package</pre>
+  ".
+
+  (** A row in the table of packages. *)
+  Definition row (package : Package.t) : LString.t :=
+    let (name, versions) := package in
+    match List.rev versions with
+    | [] => LString.s ""
+    | last_version :: _ => LString.s
+"              <tr>
+                <td><a href=""/" ++ name ++ LString.s "/" ++ Version.version last_version ++ LString.s ".html"">" ++ name ++ LString.s "</a></td>
+                <td>" ++ Version.version last_version ++ LString.s "</td>
+                <td>" ++ Version.description last_version ++ LString.s "</td>
+              </tr>
+"
+    end.
+
+  (** The table of packages. *)
+  Definition table (packages : list Package.t) : LString.t :=
+    let packages := packages |> Sort.sort (fun a b =>
+      match LString.compare (Package.name a) (Package.name b) with
+      | Lt | Eq => true
+      | Gt => false
+      end) in
+    LString.s
+"         <table class=""table table-striped text-center"">
+            <thead>
+              <tr>
+                <td><strong>Name</strong></td>
+                <td><strong>Version</strong></td>
+                <td><strong>Description</strong></td>
+              </tr>
+            </thead>
+            <tbody>
+" ++ LString.join [] (List.map row packages) ++ LString.s
+"            </tbody>
+          </table>
+".
+
+  (** The index page. *)
+  Definition page (packages : list Package.t) : LString.t :=
+    header ++ title packages ++ table packages ++ footer.
+End Index.
+
+Module Version.
+  Definition page : LString.t :=
+    header ++ footer.
+End Version.
