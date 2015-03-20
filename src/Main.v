@@ -31,7 +31,14 @@ Module Package.
 End Package.
 
 Definition print_version (version : Version.t) : C unit :=
-  System.log @@ Version.version version.
+  do! System.log @@ Version.version version in
+  do! System.log @@ Version.description version in
+  do! System.log @@ Version.license version in
+  do! System.log @@ Version.homepage version in
+  do! System.log @@ Version.bug version in
+  do! System.log @@ Version.url version in
+  do! System.log @@ Version.dependencies version in
+  System.log @@ Version.meta version.
 
 Fixpoint print_versions (versions : list Version.t) : C unit :=
   match versions with
