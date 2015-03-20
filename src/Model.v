@@ -16,4 +16,8 @@ Module Package.
   Record t := New {
     name : LString.t;
     versions : list Version.t }.
+
+  Definition number_of_versions (packages : list Package.t) : nat :=
+    List.fold_left (fun n package => List.length (Package.versions package) + n)
+      packages 0.
 End Package.
