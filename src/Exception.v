@@ -1,6 +1,9 @@
+Require Import Coq.Lists.List.
 Require Import FunctionNinjas.All.
 Require Import Io.All.
+Require IoList.
 
+Import ListNotations.
 Import C.Notations.
 
 Module Command.
@@ -36,31 +39,14 @@ Definition raise {E : Effect.t} {Exc A : Type} (exc : Exc)
   let! absurd := C.Call (effect E Exc) (Command.Exc exc) in
   match absurd with end.
 
-Module Tree.
-  Inductive t (Exc : Type) :=
-  | Exc (exc : Exc)
-  | Join (x y : t Exc).
-  Arguments Exc [Exc] _.
-  Arguments Join [Exc] _ _.
-
-  Fixpoint iter {E : Effect.t} {Exc : Type} (f : Exc -> C.t E unit)
-    (tree : t Exc) : C.t E unit :=
-    match tree with
-    | Exc exc => f exc
-    | Join x y =>
-      do! iter f x in
-      iter f y
-    end.
-End Tree.
-
 Fixpoint run {E : Effect.t} {Exc A : Type} (x : C.t (effect E Exc) A)
-  : C.t E (A + Tree.t Exc) :=
+  : C.t E (A + list Exc) :=
   match x with
   | C.Ret _ x => ret @@ inl x
   | C.Call (Command.Ok c) =>
     let! answer := C.Call E c in
     ret @@ inl answer
-  | C.Call (Command.Exc exc) => ret @@ inr @@ Tree.Exc exc
+  | C.Call (Command.Exc exc) => ret @@ inr [exc]
   | C.Let _ _ x f =>
     let! x := run x in
     match x with
@@ -72,7 +58,7 @@ Fixpoint run {E : Effect.t} {Exc A : Type} (x : C.t (effect E Exc) A)
     match xy with
     | (inl x, inl y) => ret @@ inl (x, y)
     | (inr exc, inl _) | (inl _, inr exc) => ret @@ inr exc
-    | (inr exc_x, inr exc_y) => ret @@ inr @@ Tree.Join exc_x exc_y
+    | (inr exc_x, inr exc_y) => ret @@ inr (exc_x ++ exc_y)
     end
   | C.First _ _ x y =>
     let! xy := first (run x) (run y) in
@@ -84,9 +70,9 @@ Fixpoint run {E : Effect.t} {Exc A : Type} (x : C.t (effect E Exc) A)
   end.
 
 Definition handle {E : Effect.t} {Exc : Type} (run_exc : Exc -> C.t E unit)
-  (x : C.t E (unit + Tree.t Exc)) : C.t E unit :=
+  (x : C.t E (unit + list Exc)) : C.t E unit :=
   let! x := x in
   match x with
   | inl x => ret x
-  | inr exc => Tree.iter run_exc exc
+  | inr exc => IoList.iter run_exc exc
   end.
