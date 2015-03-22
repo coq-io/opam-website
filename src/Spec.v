@@ -1,7 +1,7 @@
 Require Import Io.All.
+Require Io.List.
 Require Import ListString.All.
 Require Api.
-Require IoList.
 Require Main.
 Require Import Model.
 
@@ -23,14 +23,14 @@ Defined.
 Definition get_versions (name : LString.t) (versions : list Version.t)
   : Run.t (Main.get_versions name) versions.
   apply (Let (Api.Spec.opam_versions name (List.map Version.version versions))).
-  apply (IoList.Spec.map_id versions Version.version).
+  apply (Io.List.Spec.map_seq_id versions Version.version).
   apply get_version.
 Defined.
 
 Definition get_packages (packages : list Package.t)
   : Run.t Main.get_packages packages.
   apply (Let (Api.Spec.opam_list (List.map Package.name packages))).
-  apply (IoList.Spec.map_id packages Package.name).
+  apply (Io.List.Spec.map_seq_id packages Package.name).
   intro package.
   apply (Let (Api.Spec.log (Package.name package))).
   apply (Let (get_versions (Package.name package) (Package.versions package))).

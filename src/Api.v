@@ -4,7 +4,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import FunctionNinjas.All.
 Require Import ListString.All.
 Require Import Io.System.All.
-Require Exception.
+Require Io.Exception.
 
 Import ListNotations.
 Import C.Notations.

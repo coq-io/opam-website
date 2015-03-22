@@ -1,9 +1,7 @@
 -R . OpamWebsite
 
 src/Api.v
-src/Exception.v
 src/Extract.v
-src/IoList.v
 src/Main.v
 src/Model.v
 src/Spec.v

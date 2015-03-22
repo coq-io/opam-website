@@ -2,9 +2,9 @@ Require Import Coq.Lists.List.
 Require Import Coq.Strings.String.
 Require Import FunctionNinjas.All.
 Require Import Io.System.All.
+Require Io.List.
 Require Import ListString.All.
 Require Api.
-Require IoList.
 Require Import Model.
 Require View.
 
@@ -39,11 +39,11 @@ Definition get_version (name version : LString.t) : C Version.t :=
 
 Definition get_versions (name : LString.t) : C (list Version.t) :=
   let! versions := Api.opam_versions name in
-  IoList.map (get_version name) versions.
+  Io.List.map_seq (get_version name) versions.
 
 Definition get_packages : C (list Package.t) :=
   let! names := Api.opam_list in
-  names |> IoList.map (fun name =>
+  names |> Io.List.map_seq (fun name =>
     do! Api.log name in
     let! versions := get_versions name in
     ret @@ Package.New name versions).
@@ -56,8 +56,8 @@ Definition generate_version (package : Package.t) (version : Version.t) : C unit
   Api.write_html name (View.Version.page package version).
 
 Definition generate_packages (packages : list Package.t) : C unit :=
-  packages |> IoList.iter (fun package =>
-    Package.versions package |> IoList.iter_par (generate_version package)).
+  packages |> Io.List.iter_seq (fun package =>
+    Package.versions package |> Io.List.iter_par (generate_version package)).
 
 Definition main (argv : list LString.t) : C unit :=
   let! packages := get_packages in
