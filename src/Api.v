@@ -64,8 +64,8 @@ Module Spec.
   Defined.
 
   Definition opam_field (field package value : LString.t)
-    : Run.t (opam_field package field) value.
-    apply (Run.Call effect (Command.OpamField package field) value).
+    : Run.t (opam_field field package) value.
+    apply (Run.Call effect (Command.OpamField field package) value).
   Defined.
 
   Definition write_html (name content : LString.t)

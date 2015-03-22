@@ -24,10 +24,7 @@ Definition get_version (name version : LString.t) : C Version.t :=
     join (get_field "homepage") @@
     join (get_field "bug-reports") @@
     join (get_field "upstream-url") @@
-    (get_field "depends") in
-  let meta :=
-    LString.s "https://github.com/coq/repo-stable/tree/master/packages/" ++
-    name ++ LString.s "/" ++ full_name in
+    get_field "depends" in
   match fields with
   | (description, (license, (homepage, (bug, (url, dependencies))))) =>
     ret @@ Version.New
@@ -38,7 +35,6 @@ Definition get_version (name version : LString.t) : C Version.t :=
       bug
       url
       dependencies
-      meta
   end.
 
 Definition get_versions (name : LString.t) : C (list Version.t) :=

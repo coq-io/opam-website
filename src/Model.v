@@ -8,8 +8,7 @@ Module Version.
     homepage : LString.t;
     bug : LString.t;
     url : LString.t;
-    dependencies : LString.t;
-    meta : LString.t }.
+    dependencies : LString.t }.
 End Version.
 
 Module Package.
