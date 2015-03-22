@@ -15,6 +15,7 @@ Module Command.
   Inductive t :=
   | Log (message : LString.t)
   | OpamList
+  | OpamVersions (package : LString.t)
   | OpamField (field package : LString.t)
   | WriteHtml (name content : LString.t).
 End Command.
@@ -23,6 +24,7 @@ Definition answer (c : Command.t) : Type :=
   match c with
   | Command.Log _ => unit
   | Command.OpamList => LString.t
+  | Command.OpamVersions _ => list LString.t
   | Command.OpamField _ _ => LString.t
   | Command.WriteHtml _ _ => unit
   end.
@@ -64,54 +66,76 @@ End Exc.
 
 Definition C_exc := C.t (Exception.effect System.effect Exc.t).
 
-Definition run_opam_list : C_exc LString.t :=
-  let command := List.map LString.s ["opam"; "search"; "--short"; "coq:"] in
-  let! result := Exception.lift @@ System.eval command in
-  match result with
-  | None => Exception.raise Exc.OpamList
-  | Some (status, output, exc) =>
-    let! _ : bool := Exception.lift @@ System.print exc in
-    match status with
-    | 0%Z => ret @@ LString.trim output
-    | _ => Exception.raise Exc.OpamList
-    end
-  end.
+Module Run.
+  Definition opam_list : C_exc LString.t :=
+    let command := List.map LString.s ["opam"; "search"; "--short"; "coq:"] in
+    let! result := Exception.lift @@ System.eval command in
+    match result with
+    | None => Exception.raise Exc.OpamList
+    | Some (status, output, exc) =>
+      let! _ : bool := Exception.lift @@ System.print exc in
+      match status with
+      | 0%Z => ret @@ LString.trim output
+      | _ => Exception.raise Exc.OpamList
+      end
+    end.
 
-Definition run_opam_field (field package : LString.t) : C_exc LString.t :=
-  let field_command := LString.s "--field=" ++ field in
-  let command := [LString.s "opam"; LString.s "info"; field_command; package] in
-  let! result := Exception.lift @@ System.eval command in
-  match result with
-  | None => Exception.raise @@ Exc.OpamField field package
-  | Some (status, output, exc) =>
-    let! _ : bool := Exception.lift @@ System.print exc in
-    match status with
-    | 0%Z => ret @@ LString.trim output
-    | _ => Exception.raise @@ Exc.OpamField field package
-    end
-  end.
+  Definition opam_field (field package : LString.t) : C_exc LString.t :=
+    let field_command := LString.s "--field=" ++ field in
+    let command := [LString.s "opam"; LString.s "info"; field_command; package] in
+    let! result := Exception.lift @@ System.eval command in
+    match result with
+    | None => Exception.raise @@ Exc.OpamField field package
+    | Some (status, output, exc) =>
+      let! _ : bool := Exception.lift @@ System.print exc in
+      match status with
+      | 0%Z => ret @@ LString.trim output
+      | _ => Exception.raise @@ Exc.OpamField field package
+      end
+    end.
 
-Definition run_write_html (name content : LString.t) : C_exc unit :=
-  let file_name := LString.s "html/" ++ name in
-  let! is_success := Exception.lift @@ System.write_file file_name content in
-  if is_success then
-    ret tt
-  else
-    Exception.raise @@ Exc.WriteHtml name.
+  Definition opam_versions_aux (is_plural : bool) (package : LString.t)
+    : C_exc (list LString.t) :=
+    let field :=
+      if is_plural then
+        LString.s "available-versions"
+      else
+        LString.s "available-version" in
+    let! versions := opam_field field package in
+    let versions := LString.split versions "," in
+    let versions := List.map LString.trim versions in
+    let versions := versions |> List.filter (fun version =>
+      negb @@ LString.is_empty version) in
+    ret versions.
 
-Definition run_command (c : Command.t) : C_exc (answer c) :=
-  match c with
-  | Command.Log message => Exception.lift @@ System.log message
-  | Command.OpamList => run_opam_list
-  | Command.OpamField field package => run_opam_field field package
-  | Command.WriteHtml name content => run_write_html name content
-  end.
+  Definition opam_versions (package : LString.t) : C_exc (list LString.t) :=
+    let! single_version := opam_versions_aux false package in
+    let! many_versions := opam_versions_aux true package in
+    ret (single_version ++ many_versions).
 
-Fixpoint run {A : Type} (x : C_api A) : C_exc A :=
-  match x with
-  | C.Ret _ x => C.Ret x
-  | C.Call c => run_command c
-  | C.Let _ _ x f => C.Let (run x) (fun x => run (f x))
-  | C.Join _ _ x y => C.Join (run x) (run y)
-  | C.First _ _ x y => C.First (run x) (run y)
-  end.
+  Definition write_html (name content : LString.t) : C_exc unit :=
+    let file_name := LString.s "html/" ++ name in
+    let! is_success := Exception.lift @@ System.write_file file_name content in
+    if is_success then
+      ret tt
+    else
+      Exception.raise @@ Exc.WriteHtml name.
+
+  Definition run_command (c : Command.t) : C_exc (answer c) :=
+    match c with
+    | Command.Log message => Exception.lift @@ System.log message
+    | Command.OpamList => opam_list
+    | Command.OpamVersions package => opam_versions package
+    | Command.OpamField field package => opam_field field package
+    | Command.WriteHtml name content => write_html name content
+    end.
+
+  Fixpoint run {A : Type} (x : C_api A) : C_exc A :=
+    match x with
+    | C.Ret _ x => C.Ret x
+    | C.Call c => run_command c
+    | C.Let _ _ x f => C.Let (run x) (fun x => run (f x))
+    | C.Join _ _ x y => C.Join (run x) (run y)
+    | C.First _ _ x y => C.First (run x) (run y)
+    end.
+End Run.

@@ -8,7 +8,7 @@ Require Main.
 Definition opamWebsite : unit :=
   Extraction.run (fun argv =>
     Main.main argv |>
-    Api.run |>
+    Api.Run.run |>
     Exception.run |>
     Exception.handle Api.Exc.handle).
 
