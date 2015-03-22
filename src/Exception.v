@@ -42,6 +42,15 @@ Module Tree.
   | Join (x y : t Exc).
   Arguments Exc [Exc] _.
   Arguments Join [Exc] _ _.
+
+  Fixpoint iter {E : Effect.t} {Exc : Type} (f : Exc -> C.t E unit)
+    (tree : t Exc) : C.t E unit :=
+    match tree with
+    | Exc exc => f exc
+    | Join x y =>
+      do! iter f x in
+      iter f y
+    end.
 End Tree.
 
 Fixpoint run {E : Effect.t} {Exc A : Type} (x : C.t (effect E Exc) A)
@@ -72,4 +81,12 @@ Fixpoint run {E : Effect.t} {Exc A : Type} (x : C.t (effect E Exc) A)
     | inr (inl y) => ret @@ inl @@ inr y
     | inl (inr exc) | inr (inr exc) => ret @@ inr exc
     end
+  end.
+
+Definition handle {E : Effect.t} {Exc : Type} (run_exc : Exc -> C.t E unit)
+  (x : C.t E (unit + Tree.t Exc)) : C.t E unit :=
+  let! x := x in
+  match x with
+  | inl x => ret x
+  | inr exc => Tree.iter run_exc exc
   end.

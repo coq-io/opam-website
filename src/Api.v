@@ -4,6 +4,7 @@ Require Import Coq.ZArith.ZArith.
 Require Import FunctionNinjas.All.
 Require Import ListString.All.
 Require Import Io.System.All.
+Require Exception.
 
 Import ListNotations.
 Import C.Notations.
@@ -29,26 +30,28 @@ Definition answer (c : Command.t) : Type :=
 Definition effect : Effect.t :=
   Effect.New Command.t answer.
 
-Definition log (message : LString.t) : C.t effect unit :=
+Definition C_api := C.t effect.
+
+Definition log (message : LString.t) : C_api unit :=
   call effect (Command.Log message).
 
-Definition opam_list : C.t effect (LString.t) :=
+Definition opam_list : C_api (LString.t) :=
   call effect Command.OpamList.
 
-Definition opam_field (field package : LString.t) : C.t effect LString.t :=
+Definition opam_field (field package : LString.t) : C_api LString.t :=
   call effect (Command.OpamField field package).
 
-Definition write_html (name content : LString.t) : C.t effect unit :=
+Definition write_html (name content : LString.t) : C_api unit :=
   call effect (Command.WriteHtml name content).
 
-Module Error.
+Module Exc.
   Inductive t :=
   | OpamList
   | OpamField (field package : LString.t)
   | WriteHtml (name : LString.t).
 
-  Definition run (err : t) : C.t System.effect unit :=
-    match err with
+  Definition handle (exc : t) : C.t System.effect unit :=
+    match exc with
     | OpamList => System.log @@ LString.s "Cannot list the available packages."
     | OpamField field package =>
       System.log (LString.s "Cannot get the field " ++ field ++
@@ -57,84 +60,58 @@ Module Error.
       System.log (LString.s "Cannot generate the HTML file " ++ name ++
         LString.s ".")
     end.
-End Error.
+End Exc.
 
-Definition run_opam_list : C.t System.effect (LString.t + Error.t) :=
+Definition C_exc := C.t (Exception.effect System.effect Exc.t).
+
+Definition run_opam_list : C_exc LString.t :=
   let command := List.map LString.s ["opam"; "search"; "--short"; "coq:"] in
-  let! result := System.eval command in
+  let! result := Exception.lift @@ System.eval command in
   match result with
-  | None => ret @@ inr Error.OpamList
-  | Some (status, output, err) =>
-    let! _ : bool := System.print err in
+  | None => Exception.raise Exc.OpamList
+  | Some (status, output, exc) =>
+    let! _ : bool := Exception.lift @@ System.print exc in
     match status with
-    | 0%Z => ret @@ inl (LString.trim output)
-    | _ => ret @@ inr Error.OpamList
+    | 0%Z => ret @@ LString.trim output
+    | _ => Exception.raise Exc.OpamList
     end
   end.
 
-Definition run_opam_field (field package : LString.t)
-  : C.t System.effect (LString.t + Error.t) :=
-  let field := LString.s "--field=" ++ field in
-  let command := [LString.s "opam"; LString.s "info"; field; package] in
-  let! result := System.eval command in
+Definition run_opam_field (field package : LString.t) : C_exc LString.t :=
+  let field_command := LString.s "--field=" ++ field in
+  let command := [LString.s "opam"; LString.s "info"; field_command; package] in
+  let! result := Exception.lift @@ System.eval command in
   match result with
-  | None => ret @@ inr (Error.OpamField field package)
-  | Some (status, output, err) =>
-    let! _ : bool := System.print err in
+  | None => Exception.raise @@ Exc.OpamField field package
+  | Some (status, output, exc) =>
+    let! _ : bool := Exception.lift @@ System.print exc in
     match status with
-    | 0%Z => ret @@ inl (LString.trim output)
-    | _ => ret @@ inr (Error.OpamField field package)
+    | 0%Z => ret @@ LString.trim output
+    | _ => Exception.raise @@ Exc.OpamField field package
     end
   end.
 
-Definition run_write_html (name content : LString.t)
-  : C.t System.effect (unit + Error.t) :=
+Definition run_write_html (name content : LString.t) : C_exc unit :=
   let file_name := LString.s "html/" ++ name in
-  let! is_success := System.write_file file_name content in
+  let! is_success := Exception.lift @@ System.write_file file_name content in
   if is_success then
-    ret @@ inl tt
+    ret tt
   else
-    ret @@ inr (Error.WriteHtml name).
+    Exception.raise @@ Exc.WriteHtml name.
 
-Definition run_command (c : Command.t) : C.t System.effect (answer c + Error.t) :=
+Definition run_command (c : Command.t) : C_exc (answer c) :=
   match c with
-  | Command.Log message =>
-    do! System.log message in
-    ret (inl tt)
+  | Command.Log message => Exception.lift @@ System.log message
   | Command.OpamList => run_opam_list
   | Command.OpamField field package => run_opam_field field package
   | Command.WriteHtml name content => run_write_html name content
   end.
 
-Fixpoint run {A : Type} (x : C.t effect A) : C.t System.effect (A + Error.t) :=
+Fixpoint run {A : Type} (x : C_api A) : C_exc A :=
   match x with
-  | C.Ret _ x => ret (inl x)
+  | C.Ret _ x => C.Ret x
   | C.Call c => run_command c
-  | C.Let _ _ x f =>
-    let! x := run x in
-    match x with
-    | inr err => ret (inr err)
-    | inl x => run (f x)
-    end
-  | C.Join _ _ x y =>
-    let! xy := join (run x) (run y) in
-    match xy with
-    | (inl x, inl y) => ret @@ inl (x, y)
-    | (inr err, _) | (_, inr err) => ret (inr err)
-    end
-  | C.First _ _ x y =>
-    let! xy := first (run x) (run y) in
-    match xy with
-    | inl (inl x) => ret @@ inl (inl x)
-    | inr (inl y) => ret @@ inl (inr y)
-    | inl (inr err) | inr (inr err) => ret @@ inr err
-    end
-  end.
-
-Definition handle_errors (x : C.t System.effect (unit + Error.t))
-  : C.t System.effect unit :=
-  let! x := x in
-  match x with
-  | inl _ => ret tt
-  | inr err => Error.run err
+  | C.Let _ _ x f => C.Let (run x) (fun x => run (f x))
+  | C.Join _ _ x y => C.Join (run x) (run y)
+  | C.First _ _ x y => C.First (run x) (run y)
   end.
