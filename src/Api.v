@@ -23,7 +23,7 @@ End Command.
 Definition answer (c : Command.t) : Type :=
   match c with
   | Command.Log _ => unit
-  | Command.OpamList => LString.t
+  | Command.OpamList => list LString.t
   | Command.OpamVersions _ => list LString.t
   | Command.OpamField _ _ => LString.t
   | Command.WriteHtml _ _ => unit
@@ -37,7 +37,7 @@ Definition C_api := C.t effect.
 Definition log (message : LString.t) : C_api unit :=
   call effect (Command.Log message).
 
-Definition opam_list : C_api (LString.t) :=
+Definition opam_list : C_api (list LString.t) :=
   call effect Command.OpamList.
 
 Definition opam_versions (package : LString.t) : C_api (list LString.t) :=
@@ -48,6 +48,31 @@ Definition opam_field (field package : LString.t) : C_api LString.t :=
 
 Definition write_html (name content : LString.t) : C_api unit :=
   call effect (Command.WriteHtml name content).
+
+Module Spec.
+  Definition log (message : LString.t) : Run.t (log message) tt.
+    apply (Run.Call effect (Command.Log message) tt).
+  Defined.
+
+  Definition opam_list (packages : list LString.t) : Run.t opam_list packages.
+    apply (Run.Call effect Command.OpamList packages).
+  Defined.
+
+  Definition opam_versions (package : LString.t) (versions : list LString.t)
+    : Run.t (opam_versions package) versions.
+    apply (Run.Call effect (Command.OpamVersions package) versions).
+  Defined.
+
+  Definition opam_field (field package value : LString.t)
+    : Run.t (opam_field package field) value.
+    apply (Run.Call effect (Command.OpamField package field) value).
+  Defined.
+
+  Definition write_html (name content : LString.t)
+    : Run.t (write_html name content) tt.
+    apply (Run.Call effect (Command.WriteHtml name content) tt).
+  Defined.
+End Spec.
 
 Module Exc.
   Inductive t :=
@@ -70,7 +95,7 @@ End Exc.
 Definition C_exc := C.t (Exception.effect System.effect Exc.t).
 
 Module Run.
-  Definition opam_list : C_exc LString.t :=
+  Definition opam_list : C_exc (list LString.t) :=
     let command := List.map LString.s ["opam"; "search"; "--short"; "coq:"] in
     let! result := Exception.lift @@ System.eval command in
     match result with
@@ -78,7 +103,9 @@ Module Run.
     | Some (status, output, exc) =>
       let! _ : bool := Exception.lift @@ System.print exc in
       match status with
-      | 0%Z => ret @@ LString.trim output
+      | 0%Z =>
+        let names := LString.split (LString.trim output) (LString.Char.n) in
+        ret (names |> List.filter (fun name => negb @@ LString.is_empty name))
       | _ => Exception.raise Exc.OpamList
       end
     end.

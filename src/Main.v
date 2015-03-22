@@ -47,9 +47,6 @@ Definition get_versions (name : LString.t) : C (list Version.t) :=
 
 Definition get_packages : C (list Package.t) :=
   let! names := Api.opam_list in
-  let names := LString.split names (LString.Char.n) in
-  let names := names |> List.filter (fun name =>
-    negb @@ LString.is_empty name) in
   names |> IoList.map (fun name =>
     do! Api.log name in
     let! versions := get_versions name in

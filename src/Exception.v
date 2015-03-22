@@ -14,8 +14,7 @@ Module Command.
   Arguments Exc [E Exc] _.
 End Command.
 
-Definition answer {E : Effect.t} {Exc : Type} (c : Command.t E Exc)
-  : Type :=
+Definition answer {E : Effect.t} {Exc : Type} (c : Command.t E Exc) : Type :=
   match c with
   | Command.Ok c => Effect.answer E c
   | Command.Exc exc => Empty_set
