@@ -2,6 +2,7 @@ Require Import Coq.Lists.List.
 Require Import FunctionNinjas.All.
 Require Import Io.All.
 Require IoList.
+Require Lift.
 
 Import ListNotations.
 Import C.Notations.
@@ -23,15 +24,9 @@ Definition answer {E : Effect.t} {Exc : Type} (c : Command.t E Exc) : Type :=
 Definition effect (E : Effect.t) (Exc : Type) : Effect.t :=
   Effect.New (Command.t E Exc) answer.
 
-Fixpoint lift {E : Effect.t} {Exc A : Type} (x : C.t E A)
+Definition lift {E : Effect.t} {Exc A : Type} (x : C.t E A)
   : C.t (effect E Exc) A :=
-  match x with
-  | C.Ret _ x => C.Ret x
-  | C.Call c => C.Call (effect E Exc) (Command.Ok c)
-  | C.Let _ _ x f => C.Let (lift x) (fun x => lift (f x))
-  | C.Join _ _ x y => C.Join (lift x) (lift y)
-  | C.First _ _ x y => C.First (lift x) (lift y)
-  end.
+  Lift.run (fun c => C.Call (effect E Exc) (Command.Ok c)) x.
 
 Definition raise {E : Effect.t} {Exc A : Type} (exc : Exc)
   : C.t (effect E Exc) A :=

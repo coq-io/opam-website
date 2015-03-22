@@ -5,6 +5,7 @@ Require Import FunctionNinjas.All.
 Require Import ListString.All.
 Require Import Io.System.All.
 Require Exception.
+Require Lift.
 
 Import ListNotations.
 Import C.Notations.
@@ -160,12 +161,6 @@ Module Run.
     | Command.WriteHtml name content => write_html name content
     end.
 
-  Fixpoint run {A : Type} (x : C_api A) : C_exc A :=
-    match x with
-    | C.Ret _ x => C.Ret x
-    | C.Call c => run_command c
-    | C.Let _ _ x f => C.Let (run x) (fun x => run (f x))
-    | C.Join _ _ x y => C.Join (run x) (run y)
-    | C.First _ _ x y => C.First (run x) (run y)
-    end.
+  Definition run {A : Type} (x : C_api A) : C_exc A :=
+    Lift.run (E1 := effect) run_command x.
 End Run.

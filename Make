@@ -4,6 +4,7 @@ src/Api.v
 src/Exception.v
 src/Extract.v
 src/IoList.v
+src/Lift.v
 src/Main.v
 src/Model.v
 src/Spec.v
