@@ -5,7 +5,6 @@ Require Import FunctionNinjas.All.
 Require Import ListString.All.
 Require Import Io.System.All.
 Require Exception.
-Require Lift.
 
 Import ListNotations.
 Import C.Notations.
@@ -162,5 +161,5 @@ Module Run.
     end.
 
   Definition run {A : Type} (x : C_api A) : C_exc A :=
-    Lift.run (E1 := effect) run_command x.
+    C.run (E1 := effect) run_command x.
 End Run.

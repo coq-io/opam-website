@@ -2,7 +2,6 @@ Require Import Coq.Lists.List.
 Require Import FunctionNinjas.All.
 Require Import Io.All.
 Require IoList.
-Require Lift.
 
 Import ListNotations.
 Import C.Notations.
@@ -26,7 +25,7 @@ Definition effect (E : Effect.t) (Exc : Type) : Effect.t :=
 
 Definition lift {E : Effect.t} {Exc A : Type} (x : C.t E A)
   : C.t (effect E Exc) A :=
-  Lift.run (fun c => C.Call (effect E Exc) (Command.Ok c)) x.
+  C.run (fun c => C.Call (effect E Exc) (Command.Ok c)) x.
 
 Definition raise {E : Effect.t} {Exc A : Type} (exc : Exc)
   : C.t (effect E Exc) A :=
