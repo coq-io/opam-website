@@ -15,20 +15,6 @@ Local Open Scope list.
 
 Definition C := C.t Api.effect.
 
-Definition get_version_numbers (is_plural : bool) (name : LString.t)
-  : C (list LString.t) :=
-  let field :=
-    if is_plural then
-      LString.s "available-versions"
-    else
-      LString.s "available-version" in
-  let! versions := Api.opam_field field name in
-  let versions := LString.split versions "," in
-  let versions := List.map LString.trim versions in
-  let versions := versions |> List.filter (fun version =>
-    negb @@ LString.is_empty version) in
-  ret versions.
-
 Definition get_version (name version : LString.t) : C Version.t :=
   let full_name := name ++ LString.s "." ++ version in
   let get_field field := Api.opam_field (LString.s field) full_name in
@@ -56,10 +42,8 @@ Definition get_version (name version : LString.t) : C Version.t :=
   end.
 
 Definition get_versions (name : LString.t) : C (list Version.t) :=
-  let! single_numbers := get_version_numbers false name in
-  let! many_numbers := get_version_numbers true name in
-  let numbers := single_numbers ++ many_numbers in
-  IoList.map (get_version name) numbers.
+  let! versions := Api.opam_versions name in
+  IoList.map (get_version name) versions.
 
 Definition get_packages : C (list Package.t) :=
   let! names := Api.opam_list in

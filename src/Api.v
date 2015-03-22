@@ -40,6 +40,9 @@ Definition log (message : LString.t) : C_api unit :=
 Definition opam_list : C_api (LString.t) :=
   call effect Command.OpamList.
 
+Definition opam_versions (package : LString.t) : C_api (list LString.t) :=
+  call effect (Command.OpamVersions package).
+
 Definition opam_field (field package : LString.t) : C_api LString.t :=
   call effect (Command.OpamField field package).
 
