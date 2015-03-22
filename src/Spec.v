@@ -1,6 +1,7 @@
 Require Import Io.All.
 Require Import ListString.All.
 Require Api.
+Require IoList.
 Require Main.
 Require Import Model.
 
@@ -17,4 +18,11 @@ Definition get_version (name : LString.t) (version : Version.t)
     apply (Api.Spec.opam_field (LString.s "depends") _ (Version.dependencies version)).
   - destruct version.
     apply Ret.
+Defined.
+
+Definition get_versions (name : LString.t) (versions : list Version.t)
+  : Run.t (Main.get_versions name) versions.
+  apply (Let (Api.Spec.opam_versions name (List.map Version.version versions))).
+  apply (IoList.Spec.map_id versions Version.version).
+  apply get_version.
 Defined.
