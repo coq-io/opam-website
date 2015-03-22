@@ -10,34 +10,36 @@ Import C.Notations.
 Local Open Scope string.
 Local Open Scope list.
 
-Inductive command :=
-| Log (message : LString.t)
-| OpamList
-| OpamField (field package : LString.t)
-| WriteHtml (name content : LString.t).
+Module Command.
+  Inductive t :=
+  | Log (message : LString.t)
+  | OpamList
+  | OpamField (field package : LString.t)
+  | WriteHtml (name content : LString.t).
+End Command.
 
-Definition answer (c : command) : Type :=
+Definition answer (c : Command.t) : Type :=
   match c with
-  | Log _ => unit
-  | OpamList => LString.t
-  | OpamField _ _ => LString.t
-  | WriteHtml _ _ => unit
+  | Command.Log _ => unit
+  | Command.OpamList => LString.t
+  | Command.OpamField _ _ => LString.t
+  | Command.WriteHtml _ _ => unit
   end.
 
 Definition effect : Effect.t :=
-  Effect.New command answer.
+  Effect.New Command.t answer.
 
 Definition log (message : LString.t) : C.t effect unit :=
-  call effect (Log message).
+  call effect (Command.Log message).
 
 Definition opam_list : C.t effect (LString.t) :=
-  call effect OpamList.
+  call effect Command.OpamList.
 
 Definition opam_field (field package : LString.t) : C.t effect LString.t :=
-  call effect (OpamField field package).
+  call effect (Command.OpamField field package).
 
 Definition write_html (name content : LString.t) : C.t effect unit :=
-  call effect (WriteHtml name content).
+  call effect (Command.WriteHtml name content).
 
 Module Error.
   Inductive t :=
@@ -94,14 +96,14 @@ Definition run_write_html (name content : LString.t)
   else
     ret @@ inr (Error.WriteHtml name).
 
-Definition run_command (c : command) : C.t System.effect (answer c + Error.t) :=
+Definition run_command (c : Command.t) : C.t System.effect (answer c + Error.t) :=
   match c with
-  | Log message =>
+  | Command.Log message =>
     do! System.log message in
     ret (inl tt)
-  | OpamList => run_opam_list
-  | OpamField field package => run_opam_field field package
-  | WriteHtml name content => run_write_html name content
+  | Command.OpamList => run_opam_list
+  | Command.OpamField field package => run_opam_field field package
+  | Command.WriteHtml name content => run_write_html name content
   end.
 
 Fixpoint run {A : Type} (x : C.t effect A) : C.t System.effect (A + Error.t) :=
