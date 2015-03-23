@@ -8,6 +8,21 @@ Require Import FunctionNinjas.All.
 Require Import Model.
 
 Import ListNotations.
+Local Open Scope char.
+
+Fixpoint escape_html (s : LString.t) : LString.t :=
+  match s with
+  | [] => []
+  | c :: s =>
+    match c with
+    | "'" => LString.s "&apos;"
+    | """" => LString.s "&quot;"
+    | "&" => LString.s "&amp;"
+    | "<" => LString.s "&lt;"
+    | ">" => LString.s "&gt;"
+    | _ => [c]
+    end ++ escape_html s
+  end.
 
 (** The header of the HTML page. *)
 Definition header : LString.t :=
@@ -73,9 +88,9 @@ Module Index.
     | [] => LString.s ""
     | last_version :: _ => LString.s
 "              <tr>
-                <td><a href=""/" ++ name ++ LString.s "." ++ Version.version last_version ++ LString.s ".html"">" ++ name ++ LString.s "</a></td>
-                <td>" ++ Version.version last_version ++ LString.s "</td>
-                <td>" ++ Version.description last_version ++ LString.s "</td>
+                <td><a href=""/" ++ name ++ LString.s "." ++ Version.version last_version ++ LString.s ".html"">" ++ escape_html name ++ LString.s "</a></td>
+                <td>" ++ escape_html (Version.version last_version) ++ LString.s "</td>
+                <td>" ++ escape_html (Version.description last_version) ++ LString.s "</td>
               </tr>
 "
     end.
@@ -109,7 +124,7 @@ End Index.
 
 Module Version.
   Definition title (name : LString.t) : LString.t :=
-    LString.s "          <h1>" ++ name ++ LString.s "</h1>
+    LString.s "          <h1>" ++ escape_html name ++ LString.s "</h1>
 ".
 
   Definition version_link (is_active : bool) (name : LString.t)
@@ -121,11 +136,11 @@ Module Version.
         LString.s "" in
     let url := LString.s "/" ++ name ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
     LString.s "          <li role=""presentation""" ++ class ++
-    LString.s "><a href=""" ++ url ++ LString.s """>" ++ Version.version version ++
+    LString.s "><a href=""" ++ url ++ LString.s """>" ++ escape_html (Version.version version) ++
     LString.s "</a></li>
 ".
 
-  Definition other_versions (name : LString.t) (version : Version.t)
+  Definition version_links (name : LString.t) (version : Version.t)
     (versions : list Version.t) : LString.t :=
     LString.s "         <ul class=""nav nav-pills"">
 " ++ LString.join (LString.s "") (versions |> List.map (fun version' =>
@@ -134,17 +149,17 @@ LString.s "        </ul>
 ".
 
   Definition description (name : LString.t) (version : Version.t) : LString.t :=
-    LString.s "          <p class=""lead"">" ++ Version.description version ++ LString.s "</p>
-          <pre>opam install -j4 " ++ name ++ LString.s "." ++ Version.version version ++ LString.s "</pre>
+    LString.s "          <p class=""lead"">" ++ escape_html (Version.description version) ++ LString.s "</p>
+          <pre>opam install -j4 " ++ escape_html name ++ LString.s "." ++ escape_html (Version.version version) ++ LString.s "</pre>
 ".
 
 Definition field (is_url : bool) (name value : LString.t) : LString.t :=
   let value :=
     if is_url then
-      LString.s "<a href=""" ++ value ++ LString.s """>" ++ value ++ LString.s "</a>"
+      LString.s "<a href=""" ++ value ++ LString.s """>" ++ escape_html value ++ LString.s "</a>"
     else
-      value in
-  LString.s "            <dt>" ++ name ++ LString.s "</dt>
+      escape_html value in
+  LString.s "            <dt>" ++ escape_html name ++ LString.s "</dt>
             <dd>" ++ value ++ LString.s "</dd>
 ".
 
@@ -165,6 +180,6 @@ LString.s "          </dl>
 
   Definition page (package : Package.t) (version : Version.t) : LString.t :=
     let (name, versions) := package in
-    header ++ title name ++ other_versions name version versions ++
+    header ++ title name ++ version_links name version versions ++
     description name version ++ fields name version ++ footer.
 End Version.
