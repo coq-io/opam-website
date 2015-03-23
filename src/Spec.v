@@ -5,10 +5,10 @@ Require Api.
 Require Main.
 Require Import Model.
 
-Import Run.
+Import Io.Spec.
 
 Definition get_version (name : LString.t) (version : Version.t)
-  : Run.t (Main.get_version name (Version.version version)) version.
+  : Spec.t (Main.get_version name (Version.version version)) version.
   eapply Let.
   - eapply (Join (Api.Spec.opam_field (LString.s "description") _ (Version.description version))).
     eapply (Join (Api.Spec.opam_field (LString.s "license") _ (Version.license version))).
@@ -21,14 +21,14 @@ Definition get_version (name : LString.t) (version : Version.t)
 Defined.
 
 Definition get_versions (name : LString.t) (versions : list Version.t)
-  : Run.t (Main.get_versions name) versions.
+  : Spec.t (Main.get_versions name) versions.
   apply (Let (Api.Spec.opam_versions name (List.map Version.version versions))).
   apply (Io.List.Spec.map_seq_id versions Version.version).
   apply get_version.
 Defined.
 
 Definition get_packages (packages : list Package.t)
-  : Run.t Main.get_packages packages.
+  : Spec.t Main.get_packages packages.
   apply (Let (Api.Spec.opam_list (List.map Package.name packages))).
   apply (Io.List.Spec.map_seq_id packages Package.name).
   intro package.

@@ -3,6 +3,7 @@ Require Import Coq.Strings.String.
 Require Import Coq.ZArith.ZArith.
 Require Import FunctionNinjas.All.
 Require Import ListString.All.
+Require Import Io.All.
 Require Import Io.System.All.
 Require Io.Exception.
 
@@ -50,27 +51,29 @@ Definition write_html (name content : LString.t) : C_api unit :=
   call effect (Command.WriteHtml name content).
 
 Module Spec.
-  Definition log (message : LString.t) : Run.t (log message) tt.
-    apply (Run.Call effect (Command.Log message) tt).
+  Import Io.Spec.
+
+  Definition log (message : LString.t) : Spec.t (log message) tt.
+    apply (Call effect (Command.Log message) tt).
   Defined.
 
-  Definition opam_list (packages : list LString.t) : Run.t opam_list packages.
-    apply (Run.Call effect Command.OpamList packages).
+  Definition opam_list (packages : list LString.t) : Spec.t opam_list packages.
+    apply (Call effect Command.OpamList packages).
   Defined.
 
   Definition opam_versions (package : LString.t) (versions : list LString.t)
-    : Run.t (opam_versions package) versions.
-    apply (Run.Call effect (Command.OpamVersions package) versions).
+    : Spec.t (opam_versions package) versions.
+    apply (Call effect (Command.OpamVersions package) versions).
   Defined.
 
   Definition opam_field (field package value : LString.t)
-    : Run.t (opam_field field package) value.
-    apply (Run.Call effect (Command.OpamField field package) value).
+    : Spec.t (opam_field field package) value.
+    apply (Call effect (Command.OpamField field package) value).
   Defined.
 
   Definition write_html (name content : LString.t)
-    : Run.t (write_html name content) tt.
-    apply (Run.Call effect (Command.WriteHtml name content) tt).
+    : Spec.t (write_html name content) tt.
+    apply (Call effect (Command.WriteHtml name content) tt).
   Defined.
 End Spec.
 
