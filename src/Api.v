@@ -81,11 +81,11 @@ End Spec.
 
 Definition call_to_string (call : {c : Command.t & answer c}) : LString.t :=
   match projT1 call with
-  | Command.Log _ => LString.s "Log"
-  | Command.OpamList => LString.s "OpamList"
-  | Command.OpamVersions _ => LString.s "OpamVersions"
-  | Command.OpamField _ _ => LString.s "OpamField"
-  | Command.WriteHtml _ _ => LString.s "WriteHtml"
+  | Command.Log _ => LString.s "log"
+  | Command.OpamList => LString.s "list"
+  | Command.OpamVersions _ => LString.s "versions"
+  | Command.OpamField field package => package ++ LString.s "." ++ field
+  | Command.WriteHtml name _ => name
   end.
 
 Definition print_trace (trace : Debug.Trace.t {c : Command.t & answer c})
