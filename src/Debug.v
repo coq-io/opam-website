@@ -1,6 +1,9 @@
+Require Import Coq.Lists.List.
 Require Import FunctionNinjas.All.
 Require Import Io.All.
+Require Import ListString.All.
 
+Import ListNotations.
 Import C.Notations.
 
 Module Trace.
@@ -14,6 +17,47 @@ Module Trace.
   Arguments Let {A} _ _.
   Arguments Join {A} _ _.
   Arguments First {A} _.
+
+  Definition height (lines : list LString.t) : nat :=
+    List.length lines.
+
+  Fixpoint width (lines : list LString.t) : nat :=
+    match lines with
+    | [] => 0
+    | line :: lines => max (List.length line) (width lines)
+    end.
+
+  Fixpoint merge (width : nat) (lines_x lines_y : list LString.t)
+    : list LString.t :=
+    match (lines_x, lines_y) with
+    | (_, []) => lines_x
+    | ([], line_y :: lines_y) =>
+      (LString.repeat (LString.s " ") width ++ line_y) ::
+      merge width lines_x lines_y
+    | (line_x :: lines_x, line_y :: lines_y) =>
+      let missing_spaces := width - List.length line_x in
+      (line_x ++ LString.repeat (LString.s " ") missing_spaces ++ line_y) ::
+      merge width lines_x lines_y
+    end.
+
+  Fixpoint to_string {A : Type} (a_to_string : A -> LString.t) (trace : t A)
+    : list LString.t :=
+    match trace with
+    | Ret => [LString.s "."]
+    | Call a => [a_to_string a]
+    | Let trace_x trace_y =>
+      let lines_x := to_string a_to_string trace_x in
+      let lines_y := to_string a_to_string trace_y in
+      merge (width lines_x + 1) lines_x lines_y
+    | Join trace_x trace_y =>
+      let lines_x := to_string a_to_string trace_x in
+      let lines_y := to_string a_to_string trace_y in
+      lines_x ++ lines_y
+    | First (inl trace) =>
+      merge 6 [LString.s "left"] (to_string a_to_string trace)
+    | First (inr trace) =>
+      merge 6 [LString.s "right"] (to_string a_to_string trace)
+    end.
 End Trace.
 
 Fixpoint run {E : Effect.t} {A : Type} (x : C.t E A)
