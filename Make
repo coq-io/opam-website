@@ -1,6 +1,7 @@
 -R . OpamWebsite
 
 src/Api.v
+src/Debug.v
 src/Extract.v
 src/Main.v
 src/Model.v
