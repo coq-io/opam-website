@@ -61,6 +61,7 @@ Definition generate_packages (packages : list Package.t) : C unit :=
     Package.versions package |> Io.List.iter_par (generate_version package)).
 
 Definition main (argv : list LString.t) : C unit :=
-  let! packages := get_packages in
-  do! generate_index packages in
-  generate_packages packages.
+  Api.add_debug (
+    let! packages := get_packages in
+    do! generate_index packages in
+    generate_packages packages).

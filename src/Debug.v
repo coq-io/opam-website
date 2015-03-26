@@ -18,9 +18,6 @@ Module Trace.
   Arguments Join {A} _ _.
   Arguments First {A} _.
 
-  Definition height (lines : list LString.t) : nat :=
-    List.length lines.
-
   Fixpoint width (lines : list LString.t) : nat :=
     match lines with
     | [] => 0
@@ -43,7 +40,7 @@ Module Trace.
   Fixpoint to_string {A : Type} (a_to_string : A -> LString.t) (trace : t A)
     : list LString.t :=
     match trace with
-    | Ret => [LString.s "."]
+    | Ret => []
     | Call a => [a_to_string a]
     | Let trace_x trace_y =>
       let lines_x := to_string a_to_string trace_x in

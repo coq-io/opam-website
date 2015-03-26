@@ -6,6 +6,8 @@ Require Import ListString.All.
 Require Import Io.All.
 Require Import Io.System.All.
 Require Io.Exception.
+Require Io.List.
+Require Debug.
 
 Import ListNotations.
 Import C.Notations.
@@ -76,6 +78,25 @@ Module Spec.
     apply (Call effect (Command.WriteHtml name content) tt).
   Defined.
 End Spec.
+
+Definition call_to_string (call : {c : Command.t & answer c}) : LString.t :=
+  match projT1 call with
+  | Command.Log _ => LString.s "Log"
+  | Command.OpamList => LString.s "OpamList"
+  | Command.OpamVersions _ => LString.s "OpamVersions"
+  | Command.OpamField _ _ => LString.s "OpamField"
+  | Command.WriteHtml _ _ => LString.s "WriteHtml"
+  end.
+
+Definition print_trace (trace : Debug.Trace.t {c : Command.t & answer c})
+  : C_api unit :=
+  Debug.Trace.to_string call_to_string trace |> Io.List.iter_seq log.
+
+Definition add_debug {A : Type} (x : C_api A) : C_api A :=
+  let! x_trace := Debug.run x in
+  let (x, trace) := x_trace in
+  do! print_trace trace in
+  ret x.
 
 Module Exc.
   Inductive t :=
