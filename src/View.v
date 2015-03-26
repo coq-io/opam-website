@@ -30,7 +30,7 @@ Definition header : LString.t :=
     <div class=""container-fluid"">
       <div class=""navbar navbar-default"" role=""navigation"">
         <div class=""navbar-header"">
-          <a class=""navbar-brand"" href=""/"">Coq OPAM</a>
+          <a class=""navbar-brand"" href=""."">Coq OPAM</a>
         </div>
       </div>
       <div class=""row"">
@@ -74,7 +74,7 @@ Module Index.
     | [] => LString.s ""
     | last_version :: _ => LString.s
 "              <tr>
-                <td><a href=""/" ++ name ++ LString.s "." ++ Version.version last_version ++ LString.s ".html"">" ++ LString.escape_html name ++ LString.s "</a></td>
+                <td><a href=""./" ++ name ++ LString.s "." ++ Version.version last_version ++ LString.s ".html"">" ++ LString.escape_html name ++ LString.s "</a></td>
                 <td>" ++ LString.escape_html (Version.version last_version) ++ LString.s "</td>
                 <td>" ++ LString.escape_html (Version.description last_version) ++ LString.s "</td>
               </tr>
@@ -120,7 +120,7 @@ Module Version.
         LString.s " class=""active"""
       else
         LString.s "" in
-    let url := LString.s "/" ++ name ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
+    let url := LString.s "./" ++ name ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
     LString.s "          <li role=""presentation""" ++ class ++
     LString.s "><a href=""" ++ url ++ LString.s """>" ++ LString.escape_html (Version.version version) ++
     LString.s "</a></li>
