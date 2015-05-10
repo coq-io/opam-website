@@ -6,10 +6,10 @@ Require Main.
 
 (** The extracted program. *)
 Definition opamWebsite : unit :=
-  Extraction.run (fun argv =>
+  Extraction.launch (fun argv =>
     Main.main argv |>
-    Api.Run.run |>
-    Exception.run |>
+    Api.Evaluate.eval |>
+    Exception.eval |>
     Exception.handle Api.Exc.handle).
 
 Extraction "extraction/opamWebsite" opamWebsite.

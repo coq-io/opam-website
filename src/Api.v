@@ -52,32 +52,32 @@ Definition opam_field (field package : LString.t) : C_api LString.t :=
 Definition write_html (name content : LString.t) : C_api unit :=
   call effect (Command.WriteHtml name content).
 
-Module Spec.
-  Import Io.Spec.
+Module Run.
+  Import Io.Run.
 
-  Definition log (message : LString.t) : Spec.t (log message) tt.
+  Definition log (message : LString.t) : Run.t (log message) tt.
     apply (Call effect (Command.Log message) tt).
   Defined.
 
-  Definition opam_list (packages : list LString.t) : Spec.t opam_list packages.
+  Definition opam_list (packages : list LString.t) : Run.t opam_list packages.
     apply (Call effect Command.OpamList packages).
   Defined.
 
   Definition opam_versions (package : LString.t) (versions : list LString.t)
-    : Spec.t (opam_versions package) versions.
+    : Run.t (opam_versions package) versions.
     apply (Call effect (Command.OpamVersions package) versions).
   Defined.
 
   Definition opam_field (field package value : LString.t)
-    : Spec.t (opam_field field package) value.
+    : Run.t (opam_field field package) value.
     apply (Call effect (Command.OpamField field package) value).
   Defined.
 
   Definition write_html (name content : LString.t)
-    : Spec.t (write_html name content) tt.
+    : Run.t (write_html name content) tt.
     apply (Call effect (Command.WriteHtml name content) tt).
   Defined.
-End Spec.
+End Run.
 
 Definition call_to_string (call : {c : Command.t & answer c}) : LString.t :=
   match projT1 call with
@@ -93,7 +93,7 @@ Definition print_trace (trace : Debug.Trace.t {c : Command.t & answer c})
   Debug.Trace.to_string call_to_string trace |> Io.List.iter_seq log.
 
 Definition add_debug {A : Type} (x : C_api A) : C_api A :=
-  let! x_trace := Debug.run x in
+  let! x_trace := Debug.eval x in
   let (x, trace) := x_trace in
   do! print_trace trace in
   ret x.
@@ -118,7 +118,7 @@ End Exc.
 
 Definition C_exc := C.t (Exception.effect System.effect Exc.t).
 
-Module Run.
+Module Evaluate.
   Definition opam_list : C_exc (list LString.t) :=
     let command := List.map LString.s ["opam"; "search"; "--short"; "coq:"] in
     let! result := Exception.lift @@ System.eval command in
@@ -175,7 +175,7 @@ Module Run.
     else
       Exception.raise @@ Exc.WriteHtml name.
 
-  Definition run_command (c : Command.t) : C_exc (answer c) :=
+  Definition eval_command (c : Command.t) : C_exc (answer c) :=
     match c with
     | Command.Log message => Exception.lift @@ System.log message
     | Command.OpamList => opam_list
@@ -184,6 +184,6 @@ Module Run.
     | Command.WriteHtml name content => write_html name content
     end.
 
-  Definition run {A : Type} (x : C_api A) : C_exc A :=
-    C.run (E1 := effect) run_command x.
-End Run.
+  Definition eval {A : Type} (x : C_api A) : C_exc A :=
+    Evaluate.command (E1 := effect) eval_command x.
+End Evaluate.

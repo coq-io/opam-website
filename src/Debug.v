@@ -11,12 +11,10 @@ Module Trace.
   | Ret : t A
   | Call : A -> t A
   | Let : t A -> t A -> t A
-  | Join : t A -> t A -> t A
-  | First : t A + t A -> t A.
+  | Join : t A -> t A -> t A.
   Arguments Call {A} _.
   Arguments Let {A} _ _.
   Arguments Join {A} _ _.
-  Arguments First {A} _.
 
   Fixpoint width (lines : list LString.t) : nat :=
     match lines with
@@ -50,14 +48,10 @@ Module Trace.
       let lines_x := to_string a_to_string trace_x in
       let lines_y := to_string a_to_string trace_y in
       lines_x ++ lines_y
-    | First (inl trace) =>
-      merge 6 [LString.s "left"] (to_string a_to_string trace)
-    | First (inr trace) =>
-      merge 6 [LString.s "right"] (to_string a_to_string trace)
     end.
 End Trace.
 
-Fixpoint run {E : Effect.t} {A : Type} (x : C.t E A)
+Fixpoint eval {E : Effect.t} {A : Type} (x : C.t E A)
   : C.t E (A * Trace.t {c : Effect.command E & Effect.answer E c}) :=
   match x with
   | C.Ret _ x => ret (x, Trace.Ret _)
@@ -65,20 +59,15 @@ Fixpoint run {E : Effect.t} {A : Type} (x : C.t E A)
     let! a := call E c in
     ret (a, Trace.Call (existT _ c a))
   | C.Let _ _ x f =>
-    let! x := run x in
+    let! x := eval x in
     let (x, trace_x) := x in
-    let! y := run (f x) in
+    let! y := eval (f x) in
     let (y, trace_y) := y in
     ret (y, Trace.Let trace_x trace_y)
   | C.Join _ _ x y =>
-    let! xy := join (run x) (run y) in
+    let! xy := join (eval x) (eval y) in
     match xy with
     | ((x, trace_x), (y, trace_y)) => ret ((x, y), Trace.Join trace_x trace_y)
     end
-  | C.First _ _ x y =>
-    let! xy := first (run x) (run y) in
-    match xy with
-    | inl (x, trace_x) => ret (inl x, Trace.First (inl trace_x))
-    | inr (y, trace_y) => ret (inr y, Trace.First (inr trace_y))
-    end
+  | C.Choose _ x y => choose (eval x) (eval y)
   end.
