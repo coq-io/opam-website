@@ -62,7 +62,7 @@ Module Index.
     LString.s " packages <small>" ++ LString.of_N 10 10 None nb_versions ++
     LString.s " versions</small></h1>
         <p>Activate the Coq OPAM repository:</p>
-        <pre>opam repo add coq-stable https://github.com/coq/repo-stable.git</pre>
+        <pre>opam repo add coq-released https://coq.inria.fr/opam/released</pre>
         <p>Install a package:</p>
         <pre>opam install -j4 package</pre>
   ".
@@ -152,7 +152,7 @@ Definition field (is_url : bool) (name value : LString.t) : LString.t :=
   Definition fields (name : LString.t) (version : Version.t) : LString.t :=
     let full_name := name ++ LString.s "." ++ Version.version version in
     let meta :=
-      LString.s "https://github.com/coq/repo-stable/tree/master/packages/" ++
+      LString.s "https://github.com/coq/opam-coq-archive/tree/master/released/packages/" ++
       name ++ LString.s "/" ++ full_name in
     LString.s "          <dl class=""dl-horizontal"">
 " ++ field true (LString.s "homepage") (Version.homepage version) ++
