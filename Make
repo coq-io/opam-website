@@ -5,5 +5,5 @@ src/Debug.v
 src/Extract.v
 src/Main.v
 src/Model.v
-src/Spec.v
+src/Run.v
 src/View.v
