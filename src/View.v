@@ -72,11 +72,18 @@ Module Index.
     let (name, versions) := package in
     match List.rev versions with
     | [] => LString.s ""
-    | last_version :: _ => LString.s
+    | last_version :: _ =>
+      let description := LString.split (Version.description last_version) (LString.Char.n) in
+      let description :=
+        match description with
+        | [] => LString.s ""
+        | description :: _ => description
+        end in
+      LString.s
 "              <tr>
                 <td><a href=""./" ++ name ++ LString.s "." ++ Version.version last_version ++ LString.s ".html"">" ++ LString.escape_html name ++ LString.s "</a></td>
                 <td>" ++ LString.escape_html (Version.version last_version) ++ LString.s "</td>
-                <td>" ++ LString.escape_html (Version.description last_version) ++ LString.s "</td>
+                <td>" ++ LString.escape_html description ++ LString.s "</td>
               </tr>
 "
     end.
@@ -98,7 +105,7 @@ Module Index.
               </tr>
             </thead>
             <tbody>
-" ++ LString.join [] (List.map row packages) ++ LString.s
+" ++ LString.join (LString.s "") (List.map row packages) ++ LString.s
 "            </tbody>
           </table>
 ".
