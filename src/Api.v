@@ -56,26 +56,26 @@ Module Run.
   Import Io.Run.
 
   Definition log (message : LString.t) : Run.t (log message) tt.
-    apply (Call effect (Command.Log message) tt).
+    apply (Call (E := effect) (Command.Log message) tt).
   Defined.
 
   Definition opam_list (packages : list LString.t) : Run.t opam_list packages.
-    apply (Call effect Command.OpamList packages).
+    apply (Call (E := effect) Command.OpamList packages).
   Defined.
 
   Definition opam_versions (package : LString.t) (versions : list LString.t)
     : Run.t (opam_versions package) versions.
-    apply (Call effect (Command.OpamVersions package) versions).
+    apply (Call (E := effect) (Command.OpamVersions package) versions).
   Defined.
 
   Definition opam_field (field package value : LString.t)
     : Run.t (opam_field field package) value.
-    apply (Call effect (Command.OpamField field package) value).
+    apply (Call (E := effect) (Command.OpamField field package) value).
   Defined.
 
   Definition write_html (name content : LString.t)
     : Run.t (write_html name content) tt.
-    apply (Call effect (Command.WriteHtml name content) tt).
+    apply (Call (E := effect) (Command.WriteHtml name content) tt).
   Defined.
 End Run.
 
