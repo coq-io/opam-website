@@ -18,6 +18,7 @@ Definition header : LString.t :=
     <meta charset=""utf-8"">
     <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
     <title>Coq OPAM</title>
+    <link rel=""shortcut icon"" type=""image/png"" href=""img/bag-48.png"" />
     <link rel=""stylesheet"" href=""style.min.css"" type=""text/css"" />
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -30,14 +31,13 @@ Definition header : LString.t :=
     <div class=""container-fluid"">
       <div class=""navbar navbar-default"" role=""navigation"">
         <div class=""navbar-header"">
-          <a class=""navbar-brand"" href=""."">Coq OPAM</a>
+          <a class=""navbar-brand"" href="".""><img alt=""icon"" src=""img/bag-48.png"" height=""24""> Coq OPAM</a>
         </div>
         <div id=""navbar"" class=""collapse navbar-collapse"">
           <p class=""navbar-text navbar-right""><a class=""navbar-link"" href=""https://github.com/coq/opam-coq-archive"">github.com/coq/opam-coq-archive</a></p>
         </div>
       </div>
       <div class=""row"">
-        <div class=""col-md-12"">
 ".
 
 (** The footer of the page. *)
@@ -56,18 +56,31 @@ Definition footer : LString.t :=
 </html>
 ".
 
+(** A package name without the `coq:` prefix. *)
+Definition short_name (name : LString.t) : LString.t :=
+  match name with
+  | _ :: _ :: _ :: _ :: short => short
+  | _ => name
+  end.
+
 Module Index.
   (** The title with the number of packages. *)
   Definition title (packages : list Package.t) : LString.t :=
     let nb_packages : N := N.of_nat @@ List.length packages in
     let nb_versions : N := N.of_nat @@ Package.number_of_versions packages in
-    LString.s "          <h1>" ++ LString.of_N 10 10 None nb_packages ++
+    LString.s "        <div class=""col-md-3"">
+          <img alt=""icon"" src=""img/bag.svg"" style=""min-width: 180px; margin-top: 40px"" class=""img-responsive center-block"">
+        </div>
+        <div class=""col-md-9"">
+          <h1>" ++ LString.of_N 10 10 None nb_packages ++
     LString.s " packages <small>" ++ LString.of_N 10 10 None nb_versions ++
     LString.s " versions</small></h1>
-          <p><a href=""http://opam.ocaml.org/"">OPAM</a> is the most popular package manager for the <a href=""https://coq.inria.fr/"">Coq</a> community.</p>
+          <p><a href=""http://opam.ocaml.org/""> OPAM</a> is the most popular package manager for the <a href=""https://coq.inria.fr/"">Coq</a> community.</p>
           <p>Activate the Coq repository:</p>
           <pre>opam repo add coq-released https://coq.inria.fr/opam/released</pre>
-          <p>You can read this <a href=""http://coq-blog.clarus.me/make-a-coq-package.html"">tutorial</a> to make your own packages.</p>
+          <p>Read this <a href=""http://coq-blog.clarus.me/make-a-coq-package.html"">tutorial</a> to make your own packages.</p>
+        </div>
+        <div class=""col-md-12"">
   ".
 
   (** A row in the table of packages. *)
@@ -84,8 +97,7 @@ Module Index.
         end in
       LString.s
 "              <tr>
-                <td><a href=""./" ++ name ++ LString.s "." ++ Version.version last_version ++ LString.s ".html"">" ++ LString.escape_html name ++ LString.s "</a></td>
-                <td>" ++ LString.escape_html (Version.version last_version) ++ LString.s "</td>
+                <td class=""text-center""><a href=""./" ++ name ++ LString.s "." ++ Version.version last_version ++ LString.s ".html"">" ++ LString.escape_html (short_name name) ++ LString.s "</a></td>
                 <td>" ++ LString.escape_html description ++ LString.s "</td>
               </tr>
 "
@@ -99,11 +111,10 @@ Module Index.
       | Gt => false
       end) in
     LString.s
-"         <table class=""table table-striped text-center"">
+"        <table class=""table table-striped"">
             <thead>
               <tr>
-                <td><strong>Name</strong></td>
-                <td><strong>Version</strong></td>
+                <td class=""text-center""><strong>Name</strong></td>
                 <td><strong>Description</strong></td>
               </tr>
             </thead>
@@ -120,7 +131,8 @@ End Index.
 
 Module Version.
   Definition title (name : LString.t) : LString.t :=
-    LString.s "          <h1>" ++ LString.escape_html name ++ LString.s "</h1>
+    LString.s "        <div class=""col-md-12"">
+          <h1>" ++ LString.escape_html (short_name name) ++ LString.s "</h1>
 ".
 
   Definition version_link (is_active : bool) (name : LString.t)
@@ -131,17 +143,17 @@ Module Version.
       else
         LString.s "" in
     let url := LString.s "./" ++ name ++ LString.s "." ++ Version.version version ++ LString.s ".html" in
-    LString.s "          <li role=""presentation""" ++ class ++
+    LString.s "            <li role=""presentation""" ++ class ++
     LString.s "><a href=""" ++ url ++ LString.s """>" ++ LString.escape_html (Version.version version) ++
     LString.s "</a></li>
 ".
 
   Definition version_links (name : LString.t) (version : Version.t)
     (versions : list Version.t) : LString.t :=
-    LString.s "         <ul class=""nav nav-pills"">
+    LString.s "           <ul class=""nav nav-pills"">
 " ++ LString.join (LString.s "") (versions |> List.map (fun version' =>
   version_link (LString.eqb (Version.version version) (Version.version version')) name version')) ++
-LString.s "        </ul>
+LString.s "          </ul>
 ".
 
   Definition description (name : LString.t) (version : Version.t) : LString.t :=
