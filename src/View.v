@@ -18,7 +18,7 @@ Definition header : LString.t :=
     <meta charset=""utf-8"">
     <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
     <title>Coq OPAM</title>
-    <link rel=""shortcut icon"" type=""image/png"" href=""img/bag-48.png"" />
+    <link rel=""shortcut icon"" type=""image/png"" href=""img/shop-48.png"" />
     <link rel=""stylesheet"" href=""style.min.css"" type=""text/css"" />
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
     <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
@@ -31,7 +31,7 @@ Definition header : LString.t :=
     <div class=""container-fluid"">
       <div class=""navbar navbar-default"" role=""navigation"">
         <div class=""navbar-header"">
-          <a class=""navbar-brand"" href="".""><img alt=""icon"" src=""img/bag-48.png"" height=""24""> Coq OPAM</a>
+          <a class=""navbar-brand"" href="".""><img alt=""icon"" src=""img/shop-48.png"" height=""24""> Coq OPAM packages</a>
         </div>
         <div id=""navbar"" class=""collapse navbar-collapse"">
           <p class=""navbar-text navbar-right""><a class=""navbar-link"" href=""https://github.com/coq/opam-coq-archive"">github.com/coq/opam-coq-archive</a></p>
@@ -48,7 +48,7 @@ Definition footer : LString.t :=
       <hr/>
       <div class=""footer"">
         <p class=""text-center"">
-          <small>Sources are on <a href=""https://github.com/coq-io/opam-website"">GitHub</a>. Proudly powered by <a href=""http://coq.io/"">Coq.io</a>. © Guillaume Claret</small>
+          <small>Sources are on <a href=""https://github.com/coq-io/opam-website"">GitHub</a>. Proudly powered by <a href=""http://coq.io/"">Coq.io</a>.</small>
         </p>
       </div>
     </div>
@@ -73,8 +73,8 @@ Module Index.
         </div>
         <div class=""col-md-9"">
           <h1>" ++ LString.of_N 10 10 None nb_packages ++
-    LString.s " packages <small>" ++ LString.of_N 10 10 None nb_versions ++
-    LString.s " versions</small></h1>
+    LString.s "&nbsp;packages <small>" ++ LString.of_N 10 10 None nb_versions ++
+    LString.s "&nbsp;versions</small></h1>
           <p><a href=""http://opam.ocaml.org/""> OPAM</a> is the most popular package manager for the <a href=""https://coq.inria.fr/"">Coq</a> community.</p>
           <p>Activate the Coq repository:</p>
           <pre>opam repo add coq-released https://coq.inria.fr/opam/released</pre>
