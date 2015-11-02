@@ -1,5 +1,5 @@
 # OPAM website
-Generation of the Coq website for OPAM.
+Generation of the Coq website for OPAM. http://coq.io/opam/
 
 ## Run
 Install the dependencies:
