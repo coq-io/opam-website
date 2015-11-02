@@ -158,7 +158,7 @@ LString.s "          </ul>
 
   Definition description (name : LString.t) (version : Version.t) : LString.t :=
     LString.s "          <p class=""lead"">" ++ LString.escape_html (Version.description version) ++ LString.s "</p>
-          <pre>opam install -j4 " ++ LString.escape_html name ++ LString.s "." ++ LString.escape_html (Version.version version) ++ LString.s "</pre>
+          <pre>opam install " ++ LString.escape_html name ++ LString.s "." ++ LString.escape_html (Version.version version) ++ LString.s "</pre>
 ".
 
 Definition field (is_url : bool) (name value : LString.t) : LString.t :=
