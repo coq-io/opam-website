@@ -1,5 +1,6 @@
 Require Import Coq.Lists.List.
 Require Import Coq.Strings.String.
+Require Import Coq.Strings.Ascii.
 Require Import Coq.ZArith.ZArith.
 Require Import FunctionNinjas.All.
 Require Import ListString.All.
@@ -120,7 +121,7 @@ Definition C_exc := C.t (Exception.effect System.effect Exc.t).
 
 Module Evaluate.
   Definition opam_list : C_exc (list LString.t) :=
-    let command := List.map LString.s ["opam"; "search"; "--short"; "coq:"] in
+    let command := List.map LString.s ["opam"; "search"; "--short"; "coq-"] in
     let! result := Exception.lift @@ System.eval command in
     match result with
     | None => Exception.raise Exc.OpamList
@@ -129,7 +130,11 @@ Module Evaluate.
       match status with
       | 0%Z =>
         let names := LString.split (LString.trim output) (LString.Char.n) in
-        ret (names |> List.filter (fun name => negb @@ LString.is_empty name))
+        ret (names |> List.filter (fun name =>
+          match name with
+          | ("c" :: "o" :: "q" :: "-" :: _) % char => true
+          | _ => false
+          end))
       | _ => Exception.raise Exc.OpamList
       end
     end.

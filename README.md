@@ -4,7 +4,7 @@ Generation of the Coq website for OPAM. http://coq.io/opam/
 ## Run
 Install the dependencies:
 
-    opam install coq:io:system coq:io:exception
+    opam install coq-io-system coq-io-exception
 
 Compile the Coq code:
 

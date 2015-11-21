@@ -56,7 +56,7 @@ Definition footer : LString.t :=
 </html>
 ".
 
-(** A package name without the `coq:` prefix. *)
+(** A package name without the `coq-` prefix. *)
 Definition short_name (name : LString.t) : LString.t :=
   match name with
   | _ :: _ :: _ :: _ :: short => short
