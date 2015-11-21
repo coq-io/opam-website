@@ -1,1 +1,4 @@
 _build/
+opamWebsite.ml
+opamWebsite.mli
+opamWebsite.native
