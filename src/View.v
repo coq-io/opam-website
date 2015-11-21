@@ -31,9 +31,18 @@ Definition header : LString.t :=
     <div class=""container-fluid"">
       <div class=""navbar navbar-default"" role=""navigation"">
         <div class=""navbar-header"">
+          <button type=""button"" class=""navbar-toggle collapsed"" data-toggle=""collapse"" data-target=""#navbar"" aria-expanded=""false"" aria-controls=""navbar"">
+            <span class=""sr-only"">Toggle navigation</span>
+            <span class=""icon-bar""></span>
+            <span class=""icon-bar""></span>
+            <span class=""icon-bar""></span>
+          </button>
           <a class=""navbar-brand"" href="".""><img alt=""icon"" src=""img/shop-48.png"" height=""24""> Coq OPAM repository</a>
         </div>
         <div id=""navbar"" class=""collapse navbar-collapse"">
+          <ul class=""nav navbar-nav"">
+            <li><a href=""get_started.html"">Get started</a></li>
+          </ul>
           <p class=""navbar-text navbar-right""><a class=""navbar-link"" href=""https://github.com/coq/opam-coq-archive"">github.com/coq/opam-coq-archive</a></p>
         </div>
       </div>
@@ -48,7 +57,7 @@ Definition footer : LString.t :=
       <hr/>
       <div class=""footer"">
         <p class=""text-center"">
-          <small>Sources are on <a href=""https://github.com/coq-io/opam-website"">GitHub</a>. Proudly powered by <a href=""http://coq.io/"">Coq.io</a>.</small>
+          <small>Website <a href=""https://github.com/coq-io/opam-website"">written</a> and verified in Coq.</small>
         </p>
       </div>
     </div>
@@ -75,10 +84,9 @@ Module Index.
           <h1>" ++ LString.of_N 10 10 None nb_packages ++
     LString.s "&nbsp;packages <small>" ++ LString.of_N 10 10 None nb_versions ++
     LString.s "&nbsp;versions</small></h1>
-          <p><a href=""http://opam.ocaml.org/""> OPAM</a> is the most popular package manager for the <a href=""https://coq.inria.fr/"">Coq</a> community.</p>
-          <p>Activate the Coq repository:</p>
+          <p>The <a href=""http://opam.ocaml.org/""> OPAM</a> repository for the <a href=""https://coq.inria.fr/"">Coq</a> packages. Activate:</p>
           <pre>opam repo add coq-released https://coq.inria.fr/opam/released</pre>
-          <p>Read this <a href=""http://coq-blog.clarus.me/make-a-coq-package.html"">tutorial</a> to make your own packages.</p>
+          <p>Go to <a href=""get_started.html"">get started</a> to start using OPAM with Coq.</p>
         </div>
         <div class=""col-md-12"">
   ".
@@ -97,7 +105,7 @@ Module Index.
         end in
       LString.s
 "              <tr>
-                <td class=""text-center""><a href=""./" ++ name ++ LString.s "." ++ Version.version last_version ++ LString.s ".html"">" ++ LString.escape_html (short_name name) ++ LString.s "</a></td>
+                <td class=""text-center""><small>coq-</small><a href=""./" ++ name ++ LString.s "." ++ Version.version last_version ++ LString.s ".html"">" ++ LString.escape_html (short_name name) ++ LString.s "</a></td>
                 <td>" ++ LString.escape_html description ++ LString.s "</td>
               </tr>
 "
@@ -132,7 +140,7 @@ End Index.
 Module Version.
   Definition title (name : LString.t) : LString.t :=
     LString.s "        <div class=""col-md-12"">
-          <h1>" ++ LString.escape_html (short_name name) ++ LString.s "</h1>
+          <h1><small>coq-</small>" ++ LString.escape_html (short_name name) ++ LString.s "</h1>
 ".
 
   Definition version_link (is_active : bool) (name : LString.t)

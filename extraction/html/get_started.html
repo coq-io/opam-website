@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Coq OPAM</title>
+    <title>Coq OPAM repository</title>
     <link rel="shortcut icon" type="image/png" href="img/shop-48.png" />
     <link rel="stylesheet" href="style.min.css" type="text/css" />
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -17,19 +17,34 @@
     <div class="container-fluid">
       <div class="navbar navbar-default" role="navigation">
         <div class="navbar-header">
-          <a class="navbar-brand" href="."><img alt="icon" src="img/shop-48.png" height="24"> Coq OPAM packages</a>
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="."><img alt="icon" src="img/shop-48.png" height="24"> Coq OPAM repository</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="get_started.html">Get started</a></li>
+          </ul>
           <p class="navbar-text navbar-right"><a class="navbar-link" href="https://github.com/coq/opam-coq-archive">github.com/coq/opam-coq-archive</a></p>
         </div>
       </div>
       <div class="row">
-        <div class="col-md-2"></div>
-        <div class="col-md-10">
+        <div class="col-md-3 hidden-xs hidden-sm">
+          <ul class="nav nav-pills nav-stacked" style="padding-top: 20px;">
+            <li role="presentation"><a href="#install">Install</a></li>
+            <li role="presentation"><a href="#use">Use</a></li>
+            <li role="presentation"><a href="#">...</a></li>
+          </ul>
+        </div>
+        <div class="col-md-9">
           <h1>Get started</h1>
-          <h2>Install</h2>
+          <h2 id="install">Install</h2>
           <p><em>For now, OPAM for Coq does not support Windows.</em></p>
-          <p>First, install the <a href="http://opam.ocaml.org/">OPAM</a> package manager as explained on <a href="http://opam.ocaml.org/doc/Install.html">install OPAM</a>, and make sure you have an <a href="http://opam.ocaml.org/doc/Install.html#ExternalSolvers">external solver</a> such as <code>aspcud</code>. Then, activate the Coq repository:</p>
+          <p>First, install the <a href="http://opam.ocaml.org/">OPAM</a> package manager as explained on <a href="http://opam.ocaml.org/doc/Install.html">install OPAM</a>, and check that you have an <a href="http://opam.ocaml.org/doc/Install.html#ExternalSolvers">external solver</a> such as <code>aspcud</code>. Then, activate the Coq repository:</p>
           <pre>opam repo add coq-released https://coq.inria.fr/opam/released</pre>
           and install the latest version of <a href="https://coq.inria.fr/">Coq</a>:
           <pre>opam pin add coq `opam show --field=version coq`</pre>
@@ -48,7 +63,7 @@ base-unix             base  Unix library distributed with the OCaml compiler
 camlp5                6.14  Preprocessor-pretty-printer of OCaml
 coq                  8.4.6 (pinned)  Formal proof management system.</pre>
 
-          <h2>Use</h2>
+          <h2 id="use">Use</h2>
           <p>...</p>
         </div>
       </div>
