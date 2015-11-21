@@ -37,7 +37,7 @@ Definition header : LString.t :=
             <span class=""icon-bar""></span>
             <span class=""icon-bar""></span>
           </button>
-          <a class=""navbar-brand"" href="".""><img alt=""icon"" src=""img/shop-48.png"" height=""24""> Coq OPAM repository</a>
+          <a class=""navbar-brand"" href="".""><img alt=""icon"" src=""img/shop-48.png"" height=""24""> Coq OPAM</a>
         </div>
         <div id=""navbar"" class=""collapse navbar-collapse"">
           <ul class=""nav navbar-nav"">

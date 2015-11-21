@@ -23,7 +23,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="."><img alt="icon" src="img/shop-48.png" height="24"> Coq OPAM repository</a>
+          <a class="navbar-brand" href="."><img alt="icon" src="img/shop-48.png" height="24"> Coq OPAM</a>
         </div>
         <div id="navbar" class="collapse navbar-collapse">
           <ul class="nav navbar-nav">
@@ -44,7 +44,7 @@
           <h1>Get started</h1>
           <h2 id="install">Install</h2>
           <p><em>For now, OPAM for Coq does not support Windows.</em></p>
-          <p>First, install the <a href="http://opam.ocaml.org/">OPAM</a> package manager as explained on <a href="http://opam.ocaml.org/doc/Install.html">install OPAM</a>, and check that you have an <a href="http://opam.ocaml.org/doc/Install.html#ExternalSolvers">external solver</a> such as <code>aspcud</code>. Then, activate the Coq repository:</p>
+          <p>First, install the <a href="http://opam.ocaml.org/">OPAM</a> package manager as explained on <a href="http://opam.ocaml.org/doc/Install.html">install OPAM</a>, and check that you have an <a href="http://opam.ocaml.org/doc/Install.html#ExternalSolvers">external solver</a>. Then, activate the Coq repository:</p>
           <pre>opam repo add coq-released https://coq.inria.fr/opam/released</pre>
           and install the latest version of <a href="https://coq.inria.fr/">Coq</a>:
           <pre>opam pin add coq `opam show --field=version coq`</pre>
@@ -64,7 +64,16 @@ camlp5                6.14  Preprocessor-pretty-printer of OCaml
 coq                  8.4.6 (pinned)  Formal proof management system.</pre>
 
           <h2 id="use">Use</h2>
-          <p>...</p>
+          <p>Install a package:</p>
+          <pre>opam install coq-io-hello-world</pre>
+          <p>Install a package in a specific version:</p>
+          <pre>opam install coq-io-hello-world.1.1.0</pre>
+          <p>List the currently installed packages:</p>
+          <pre>opam list</pre>
+          <p>Update the list of available packages:</p>
+          <pre>opam update</pre>
+          <p>See the full description of a package:</p>
+          <pre>opam show coq-io-hello-world</pre>
         </div>
       </div>
       <hr/>
