@@ -17,7 +17,7 @@ Definition header : LString.t :=
   <head>
     <meta charset=""utf-8"">
     <meta name=""viewport"" content=""width=device-width, initial-scale=1"">
-    <title>Coq OPAM</title>
+    <title>Coq OPAM repository</title>
     <link rel=""shortcut icon"" type=""image/png"" href=""img/shop-48.png"" />
     <link rel=""stylesheet"" href=""style.min.css"" type=""text/css"" />
     <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
@@ -31,7 +31,7 @@ Definition header : LString.t :=
     <div class=""container-fluid"">
       <div class=""navbar navbar-default"" role=""navigation"">
         <div class=""navbar-header"">
-          <a class=""navbar-brand"" href="".""><img alt=""icon"" src=""img/shop-48.png"" height=""24""> Coq OPAM packages</a>
+          <a class=""navbar-brand"" href="".""><img alt=""icon"" src=""img/shop-48.png"" height=""24""> Coq OPAM repository</a>
         </div>
         <div id=""navbar"" class=""collapse navbar-collapse"">
           <p class=""navbar-text navbar-right""><a class=""navbar-link"" href=""https://github.com/coq/opam-coq-archive"">github.com/coq/opam-coq-archive</a></p>
