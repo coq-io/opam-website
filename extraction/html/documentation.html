@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>...</title>
+    <link rel="stylesheet" href="style.min.css" type="text/css" />
+  </head>
+  <body>
+    <h1>Get started</h1>
+    <h2>Install</h2>
+    <p><em>For now, OPAM for Coq does not support Windows.</em></p>
+    <p>First, install the <a href="http://opam.ocaml.org/">OPAM</a> package manager as explained on <a href="http://opam.ocaml.org/doc/Install.html">install OPAM</a>, and make sure you have an <a href="http://opam.ocaml.org/doc/Install.html#ExternalSolvers">external solver</a> such as <code>aspcud</code>. Then, activate the Coq repository:</p>
+    <pre>opam repo add coq-released https://coq.inria.fr/opam/released</pre>
+    and install the latest version of <a href="https://coq.inria.fr/">Coq</a>:
+    <pre>opam pin add coq `opam show --field=version coq`</pre>
+    To install a specific version of Coq, list all the Coq versions:
+    <pre>opam show --field=available-versions coq</pre>
+    and specify the version to install:
+    <pre>opam pin add coq 8.4.6</pre>
+    <p>If you list your packages:</p>
+    <pre>opam list</pre>
+    <p>you should get something like:</p>
+    <pre># Installed packages for system:
+base-bigarray         base  Bigarray library distributed with the OCaml compiler
+base-no-ppx           base  A pseudo-library to indicate lack of extension points support
+base-threads          base  Threads library distributed with the OCaml compiler
+base-unix             base  Unix library distributed with the OCaml compiler
+camlp5                6.14  Preprocessor-pretty-printer of OCaml
+coq                  8.4.6 (pinned)  Formal proof management system.</pre>
+
+    <h2>Use</h2>
+    <p>...</p>
+  </body>
+</html>
