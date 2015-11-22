@@ -53,7 +53,7 @@
           <pre>opam show --field=available-versions coq</pre>
           and specify the version to install:
           <pre>opam pin add coq 8.4.6</pre>
-          <p>If you list your packages:</p>
+          <p>If you list your installed packages:</p>
           <pre>opam list</pre>
           <p>you should get something like:</p>
           <pre># Installed packages for system:
@@ -71,25 +71,29 @@ coq                  8.4.6 (pinned)  Formal proof management system.</pre>
           <pre>opam install coq-io-hello-world.1.1.0</pre>
           <p>List the currently installed packages:</p>
           <pre>opam list</pre>
-          <p>Update the list of available packages:</p>
+          <p>Update the list of available packages (do not upgrade the currently installed packages):</p>
           <pre>opam update</pre>
           <p>See the full description of a package:</p>
           <pre>opam show coq-io-hello-world</pre>
 
           <h2 id="add-a-package">Add a package</h2>
-          <p>To make a package, you can read the <a href="http://coq-blog.clarus.me/make-a-coq-package.html">make a Coq package</a> blog post.</p>
+          <p>To make a package, read the <a href="http://coq-blog.clarus.me/make-a-coq-package.html">make a Coq package</a> blog post.</p>
 
           <h2 id="faq">FAQ</h2>
-          <h3>Upgrade packages</h3>
-          <p>Run:</p>
+          <h3>Upgrade</h3>
+          <p>To upgrade your packages, run:</p>
           <pre>opam upgrade</pre>
-          <p>Be cautious that this command may break your developments, by introducing breaking changes in your dependencies. This command does not upgrade Coq since this package is <em>pinned</em>.</p>
+          <p>Be cautious that this command may break your developments, by introducing breaking changes in your dependencies. This command does not upgrade Coq if this package is pinned.</p>
 
           <h3>Pinning of Coq</h3>
-          <p>This is not necessary to pin Coq. Actually, you can install Coq as any other package. But we recommend you to pin the version of Coq because new versions of Coq often introduce breaking changes.</p>
+          <p>This is not necessary to pin Coq. Actually, you can install Coq like any other package. But we recommend you to pin Coq because new versions of Coq often introduce breaking changes.</p>
 
           <h3>Have several Coq versions</h3>
-          <p>TODO</p>
+          <p>This is a common situation to need to work with different versions of Coq or libraries. The OPAM package manager provides the <code>opam switch</code> command to switch between different working environments, each working environment being defined by an OCaml version. You can also use the <code>--root=</code> option to change the folder in which you install the OPAM files, in order to have several independent installations of OPAM.</p>
+
+          <h3>Coq beta</h3>
+          <p>The development versions of Coq are in a separated repository. Activate it with:</p>
+          <pre>opam repo add coq-core-dev https://coq.inria.fr/opam/core-dev</pre>
         </div>
       </div>
       <hr/>
