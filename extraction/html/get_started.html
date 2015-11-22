@@ -37,7 +37,8 @@
           <ul class="nav nav-pills nav-stacked" style="padding-top: 20px;">
             <li role="presentation"><a href="#install">Install</a></li>
             <li role="presentation"><a href="#use">Use</a></li>
-            <li role="presentation"><a href="#">...</a></li>
+            <li role="presentation"><a href="#add-a-package">Add a package</a></li>
+            <li role="presentation"><a href="#faq">FAQ</a></li>
           </ul>
         </div>
         <div class="col-md-9">
@@ -74,6 +75,21 @@ coq                  8.4.6 (pinned)  Formal proof management system.</pre>
           <pre>opam update</pre>
           <p>See the full description of a package:</p>
           <pre>opam show coq-io-hello-world</pre>
+
+          <h2 id="add-a-package">Add a package</h2>
+          <p>To make a package, you can read the <a href="http://coq-blog.clarus.me/make-a-coq-package.html">make a Coq package</a> blog post.</p>
+
+          <h2 id="faq">FAQ</h2>
+          <h3>Upgrade packages</h3>
+          <p>Run:</p>
+          <pre>opam upgrade</pre>
+          <p>Be cautious that this command may break your developments, by introducing breaking changes in your dependencies. This command does not upgrade Coq since this package is <em>pinned</em>.</p>
+
+          <h3>Pinning of Coq</h3>
+          <p>This is not necessary to pin Coq. Actually, you can install Coq as any other package. But we recommend you to pin the version of Coq because new versions of Coq often introduce breaking changes.</p>
+
+          <h3>Have several Coq versions</h3>
+          <p>TODO</p>
         </div>
       </div>
       <hr/>
