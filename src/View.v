@@ -46,7 +46,6 @@ Definition header : LString.t :=
           <p class=""navbar-text navbar-right""><a class=""navbar-link"" href=""https://github.com/coq/opam-coq-archive"">github.com/coq/opam-coq-archive</a></p>
         </div>
       </div>
-      <div class=""row"">
 ".
 
 (** The footer of the page. *)
@@ -73,11 +72,28 @@ Definition short_name (name : LString.t) : LString.t :=
   end.
 
 Module Index.
+  Definition disclaimer : LString.t :=
+    LString.s "      <div class=""row"">
+        <div class=""col-md-1"">
+        </div>
+        <div class=""col-md-10"">
+          <div class=""alert alert-warning alert-dismissible"" role=""alert"">
+            <strong>Disclaimer</strong>
+            This website shows what can be done with the <a class=""alert-link"" href=""http://coq.io/"">Coq.io</a> framework.
+            The official index of Coq packages is at <a class=""alert-link"" href=""https://coq.inria.fr/opam/www/"">coq.inria.fr/opam/www</a>.
+          </div>
+        </div>
+        <div class=""col-md-1"">
+        </div>
+      </div>
+".
+
   (** The title with the number of packages. *)
   Definition title (packages : list Package.t) : LString.t :=
     let nb_packages : N := N.of_nat @@ List.length packages in
     let nb_versions : N := N.of_nat @@ Package.number_of_versions packages in
-    LString.s "        <div class=""col-md-3"">
+    LString.s "      <div class=""row"">
+        <div class=""col-md-3"">
           <img alt=""icon"" src=""img/bag.svg"" style=""min-width: 180px; margin-top: 40px"" class=""img-responsive center-block"">
         </div>
         <div class=""col-md-9"">
@@ -88,6 +104,8 @@ Module Index.
           <pre>opam repo add coq-released https://coq.inria.fr/opam/released</pre>
           <p>Go to <a href=""get_started.html"">get started</a> to start using OPAM with Coq.</p>
         </div>
+      </div>
+      <div class=""row"" style=""margin-top: 40px;"">
         <div class=""col-md-12"">
   ".
 
@@ -134,7 +152,7 @@ Module Index.
 
   (** The index page. *)
   Definition page (packages : list Package.t) : LString.t :=
-    header ++ title packages ++ table packages ++ footer.
+    header ++ disclaimer ++ title packages ++ table packages ++ footer.
 End Index.
 
 Module Version.
