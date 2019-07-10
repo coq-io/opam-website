@@ -20,12 +20,12 @@ Definition get_version (name version : LString.t) : C Version.t :=
   let full_name := name ++ LString.s "." ++ version in
   let get_field field := Api.opam_field (LString.s field) full_name in
   let! fields :=
-    join (get_field "description") @@
-    join (get_field "license") @@
-    join (get_field "homepage") @@
-    join (get_field "bug-reports") @@
-    join (get_field "upstream-url") @@
-    get_field "depends" in
+    join (get_field "synopsis") @@
+    join (get_field "license:") @@
+    join (get_field "homepage:") @@
+    join (get_field "bug-reports:") @@
+    join (get_field "url.src:") @@
+    get_field "depends:" in
   match fields with
   | (description, (license, (homepage, (bug, (url, dependencies))))) =>
     ret @@ Version.New

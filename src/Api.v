@@ -153,24 +153,13 @@ Module Evaluate.
       end
     end.
 
-  Definition opam_versions_aux (is_plural : bool) (package : LString.t)
-    : C_exc (list LString.t) :=
-    let field :=
-      if is_plural then
-        LString.s "available-versions"
-      else
-        LString.s "available-version" in
-    let! versions := opam_field field package in
-    let versions := LString.split versions "," in
+  Definition opam_versions (package : LString.t) : C_exc (list LString.t) :=
+    let! versions := opam_field (LString.s "all-versions") package in
+    let versions := LString.split versions " " in
     let versions := List.map LString.trim versions in
     let versions := versions |> List.filter (fun version =>
       negb @@ LString.is_empty version) in
     ret versions.
-
-  Definition opam_versions (package : LString.t) : C_exc (list LString.t) :=
-    let! single_version := opam_versions_aux false package in
-    let! many_versions := opam_versions_aux true package in
-    ret (single_version ++ many_versions).
 
   Definition write_html (name content : LString.t) : C_exc unit :=
     let file_name := LString.s "html/" ++ name in
