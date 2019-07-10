@@ -16,6 +16,9 @@ Local Open Scope list.
 
 Definition C := C.t Api.effect.
 
+Definition unquote (field_content : LString.t) : LString.t :=
+  List.removelast (List.tl field_content).
+
 Definition get_version (name version : LString.t) : C Version.t :=
   let full_name := name ++ LString.s "." ++ version in
   let get_field field := Api.opam_field (LString.s field) full_name in
@@ -31,10 +34,10 @@ Definition get_version (name version : LString.t) : C Version.t :=
     ret @@ Version.New
       version
       description
-      license
-      homepage
-      bug
-      url
+      (unquote license)
+      (unquote homepage)
+      (unquote bug)
+      (unquote url)
       dependencies
   end.
 

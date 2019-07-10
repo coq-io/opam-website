@@ -1,3 +1,4 @@
+Require Import Coq.Lists.List.
 Require Import Io.All.
 Require Io.List.
 Require Import ListString.All.
@@ -7,16 +8,29 @@ Require Import Model.
 
 Import Io.Run.
 
+Definition quote (field_content : LString.t) : LString.t :=
+  LString.s """" ++ field_content ++ LString.s """".
+
+Lemma unquote_quote (field_content : LString.t) : Main.unquote (quote field_content) = field_content.
+  unfold Main.unquote, quote.
+  simpl.
+  rewrite List.removelast_app.
+  - rewrite List.app_nil_r; reflexivity.
+  - congruence.
+Qed.
+
 Definition get_version (name : LString.t) (version : Version.t)
   : Run.t (Main.get_version name (Version.version version)) version.
   eapply Let.
   - eapply (Join (Api.Run.opam_field (LString.s "synopsis") _ (Version.description version))).
-    eapply (Join (Api.Run.opam_field (LString.s "license:") _ (Version.license version))).
-    eapply (Join (Api.Run.opam_field (LString.s "homepage:") _ (Version.homepage version))).
-    eapply (Join (Api.Run.opam_field (LString.s "bug-reports:") _ (Version.bug version))).
-    eapply (Join (Api.Run.opam_field (LString.s "url.src:") _ (Version.url version))).
+    eapply (Join (Api.Run.opam_field (LString.s "license:") _ (quote (Version.license version)))).
+    eapply (Join (Api.Run.opam_field (LString.s "homepage:") _ (quote (Version.homepage version)))).
+    eapply (Join (Api.Run.opam_field (LString.s "bug-reports:") _ (quote (Version.bug version)))).
+    eapply (Join (Api.Run.opam_field (LString.s "url.src:") _ (quote (Version.url version)))).
     apply (Api.Run.opam_field (LString.s "depends:") _ (Version.dependencies version)).
   - destruct version.
+    simpl.
+    repeat rewrite unquote_quote.
     apply Ret.
 Defined.
 
