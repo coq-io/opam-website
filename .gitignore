@@ -1,5 +1,8 @@
+.coqdeps.d
 Makefile
 Makefile.bak
-*.vo
-*.v.d
+Makefile.conf
+*.aux
 *.glob
+*.v.d
+*.vo

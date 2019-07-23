@@ -1,5 +1,6 @@
 (** Render a model to HTML. *)
 Require Import Coq.Lists.List.
+Require Import Coq.Strings.String.
 Require Import Coq.NArith.NArith.
 Require Import Coq.Strings.Ascii.
 Require Import ListPlus.All.
